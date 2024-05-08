@@ -13,7 +13,8 @@
  * @nextCar: next car in list
 */
 
-typedef struct cars {
+typedef struct cars
+{
 	int id;
 	int laps;
 	struct cars *nextCar;
