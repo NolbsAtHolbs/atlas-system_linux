@@ -10,7 +10,7 @@
  * struct cars - represents a car in a race
  * @id: id of car
  * @laps: laps car has driven
- * @next: next car in list
+ * @nextCar: next car in list
 */
 
 typedef struct cars {

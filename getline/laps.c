@@ -20,7 +20,8 @@ void race_state(int *id, size_t size)
 
 	for (; size--; id++)
 	{
-		for (previousCar = NULL, nextCar = cars; nextCar; previousCar = nextCar, nextCar = nextCar->nextCar)
+		for (previousCar = NULL, nextCar = cars; nextCar;
+				previousCar = nextCar, nextCar = nextCar->nextCar)
 			if (*id <= nextCar->id)
 				break;
 
