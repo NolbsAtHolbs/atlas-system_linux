@@ -12,6 +12,7 @@ char *_getline(const int fd)
 	char *line = NULL;
 	int i = position;
 	int j;
+
 	while (1)
 	{
 		if (position >= bytes_read)
