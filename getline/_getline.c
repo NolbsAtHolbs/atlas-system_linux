@@ -22,7 +22,23 @@ char *_getline(const int fd)
 			position = 0;
 			bytes_read = read(fd, buffer, READ_SIZE);
 			if (bytes_read == 0)
-				return (NULL);
+			{
+				if (i < position)
+				{
+					line = malloc((position - i + 1) * sizeof(char));
+					if (!line)
+						return (NULL);
+					for (j = i; j < position; j++)
+						line[j - i] = buffer[j];
+					line[position - i] = '\0';
+					position++;
+					return (line);
+				}
+                else
+                {
+                    return (NULL);
+                }
+			}
 			if (bytes_read == -1) /* account for _getline read error */
 				return (NULL);
 			buffer[bytes_read] = '\0'; /* mark end of string */
