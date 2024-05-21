@@ -41,6 +41,7 @@ int main(int argc, char *argv[])
 * list_directory - Lists the contents of a directory
 * @path: Path to the directory
 * @program_name: Name of the program (argv[0])
+* @show_path: Flag indicating when path is shown
 */
 void list_directory(char *path, char *program_name, int show_path)
 {
