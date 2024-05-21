@@ -4,7 +4,7 @@
 #include <dirent.h>
 #include <errno.h>
 
-void list_directory(char *path, char *program_name);
+void list_directory(char *path, char *program_name, int show_path);
 void handle_errors(char *program_name, char *path);
 
 /**
@@ -21,13 +21,13 @@ int main(int argc, char *argv[])
 	/* list current dir */
 	if (argc == 1)
 	{
-		list_directory(".", argv[0]);
+		list_directory(".", argv[0], 0);
 	}
 	else
 	{
 		for (i = 1; i < argc; i++)
 		{
-			list_directory(argv[i], argv[0]);
+			list_directory(argv[i], argv[0], 1);
 			if (i < argc - 1)
 			{
 				printf("\n");
@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
 * @path: Path to the directory
 * @program_name: Name of the program (argv[0])
 */
-void list_directory(char *path, char *program_name)
+void list_directory(char *path, char *program_name, int show_path)
 {
 	struct dirent *entry;
 	DIR *dir;
@@ -53,10 +53,16 @@ void list_directory(char *path, char *program_name)
 		handle_errors(program_name, path);
 		return;
 	}
-	printf("%s:\n", path);
+	if (show_path)
+	{
+		printf("%s:\n", path);
+	}
 	while ((entry = readdir(dir)) != NULL)
 	{
-		printf("%s\n", entry->d_name);
+		if (entry->d_name[0] != '.')
+		{
+			printf("%s\n", entry->d_name);
+		}
 	}
 	closedir(dir);
 }
