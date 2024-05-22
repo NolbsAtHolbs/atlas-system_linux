@@ -7,7 +7,15 @@
 */
 void handle_errors(char *program_name, char *path)
 {
-	fprintf(stderr, "%s: cannot access %s: ", program_name, path);
+	fprintf(stderr, "%s: cannot ", program_name);
+	if (errno == ENOTDIR)
+	{
+		fprintf(stderr, "access %s: ", path);
+	}
+	else
+	{
+		fprintf(stderr, "open directory %s: ", path);
+	}
 	perror("");
 }
 
