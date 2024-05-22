@@ -8,7 +8,7 @@
 void handle_errors(char *program_name, char *path)
 {
 	fprintf(stderr, "%s: cannot ", program_name);
-	if (errno == ENOTDIR)
+	if (errno == ENOENT)
 	{
 		fprintf(stderr, "access %s: ", path);
 	}
