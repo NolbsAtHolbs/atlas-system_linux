@@ -65,11 +65,6 @@ void list_directory(char *path, char *program_name, int show_path)
 
 	sort_entries(entries, count);
 
-	if (show_path)
-	{
-		printf("%s:\n", path);
-	}
-
 	for (count = 0; entries[count] != NULL; count++)
 	{
 		printf("%s\n", entries[count]);
