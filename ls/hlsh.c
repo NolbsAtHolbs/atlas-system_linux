@@ -80,15 +80,16 @@ void *xrealloc(void *ptr, size_t size, char *program_name)
 }
 
 /**
-* compare_strings - Case insensitive string comparison
+* compare_strings - Case insensitive string compare
 * @a: First string
 * @b: Second string
 *
-* Return: Negative value if a < b, 0 if a == b, positive value if a > b
+* Return: Neg val if a < b, 0 if a == b, pos val if a > b
 */
 int compare_strings(const char *a, const char *b)
 {
-	char lower_a, lower_b;
+	char lower_a;
+	char lower_b;
 
 	while (*a && *b)
 	{
@@ -111,13 +112,15 @@ int compare_strings(const char *a, const char *b)
 }
 
 /**
-* sort_entries - Sorts an array of strings using bubble sort
+* sort_entries - Bubble sorts an array of strs
 * @entries: Array of strings
-* @count: Number of strings in the array
+* @count: Number of strings in array
 */
 void sort_entries(char **entries, int count)
 {
-	int i, j, swapped;
+	int i;
+	int j;
+	int swapped;
 	char *temp;
 
 	for (i = 0; i < count - 1; i++)
