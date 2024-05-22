@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
 	{
 		for (i = 1; i < argc; i++)
 		{
-			list_directory(argv[i], argv[0], 0); /* apparently doesnt matter */
+			list_directory(argv[i], argv[0], 1); /* curious */
 			if (i < argc - 1)
 			{
 				printf("\n");
