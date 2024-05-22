@@ -101,5 +101,5 @@ char **read_entries(DIR *dir, int *count, char *program_name)
 		}
 	}
 	entries[*count] = NULL;
-	return entries;
+	return (entries);
 }

@@ -39,7 +39,7 @@ char *my_strdup(const char *s, char *program_name)
 		dup[i] = s[i];
 	}
 
-	return dup;
+	return (dup);
 }
 
 /**
@@ -52,12 +52,13 @@ char *my_strdup(const char *s, char *program_name)
 void *xmalloc(size_t size, char *program_name)
 {
 	void *ptr = malloc(size);
+
 	if (!ptr)
 	{
 		handle_errors(program_name, "memory allocation");
 		exit(EXIT_FAILURE);
 	}
-	return ptr;
+	return (ptr);
 }
 
 /**
@@ -76,7 +77,7 @@ void *xrealloc(void *ptr, size_t size, char *program_name)
 		handle_errors(program_name, "memory allocation");
 		exit(EXIT_FAILURE);
 	}
-	return ptr;
+	return (ptr);
 }
 
 /**
@@ -97,18 +98,18 @@ int compare_strings(const char *a, const char *b)
 		lower_b = (*b >= 'A' && *b <= 'Z') ? *b + 32 : *b;
 
 		if (lower_a < lower_b)
-			return -1;
+			return (-1);
 		if (lower_a > lower_b)
-			return 1;
+			return (1);
 
 		a++;
 		b++;
 	}
 	if (*a == '\0' && *b == '\0')
-		return 0;
+		return (0);
 	if (*a == '\0')
-		return -1;
-	return 1;
+		return (-1);
+	return (1);
 }
 
 /**
