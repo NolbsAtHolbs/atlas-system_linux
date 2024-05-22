@@ -1,6 +1,6 @@
 #include "hls.h"
 
-void list_directory(char *path, char *program_name, int show_path);
+void list_directory(char *path, char *program_name);
 char **read_entries(DIR *dir, int *count, char *program_name);
 
 /**
@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
 
 	if (argc == 1)
 	{
-		list_directory(".", argv[0], 0);
+		list_directory(".", argv[0]);
 	}
 	else
 	{
@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
 			{
 				printf("%s:\n", argv[i]);
 			}
-			list_directory(argv[i], argv[0], argc > 2); /* curious */
+			list_directory(argv[i], argv[0]); /* curious */
 			if (i < argc - 1)
 			{
 				printf("\n");
@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
 * @program_name: Name of the program (argv[0])
 * @show_path: Flag indicating when path is shown
 */
-void list_directory(char *path, char *program_name, int show_path)
+void list_directory(char *path, char *program_name)
 {
 	DIR *dir;
 	char **entries;

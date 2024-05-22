@@ -1,5 +1,5 @@
-#ifndef HELPERS_H
-#define HELPERS_H
+#ifndef HlS_H
+#define HlS_H
 
 #include <stdlib.h>
 #include <stdio.h>
