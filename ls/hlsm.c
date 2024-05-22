@@ -13,6 +13,7 @@ char **read_entries(DIR *dir, int *count, char *program_name);
 int main(int argc, char *argv[])
 {
 	int i;
+	int first = 1;
 
 	if (argc == 1)
 	{
@@ -22,15 +23,28 @@ int main(int argc, char *argv[])
 	{
 		for (i = 1; i < argc; i++)
 		{
-			if (argc > 2)
+			DIR *dir = opendir(argv[i]);
+			if (dir == NULL && errno != ENOTDIR)
 			{
+				handle_errors(argv[0], argv[i]);
+				continue;
+			}
+			if (dir != NULL)
+			{
+				closedir(dir);
+			}
+
+			if (argc > 2 && dir != NULL)
+			{
+				if (!first)
+				{
+					printf("\n");
+				}
 				printf("%s:\n", argv[i]);
+				first = 0;
 			}
+
 			list_directory(argv[i], argv[0]); /* curious */
-			if (i < argc - 1)
-			{
-				printf("\n");
-			}
 		}
 	}
 	return (0);
