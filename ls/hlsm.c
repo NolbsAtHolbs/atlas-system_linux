@@ -47,6 +47,11 @@ void list_directory(char *path, char *program_name, int show_path)
 	dir = opendir(path);
 	if (dir == NULL)
 	{
+		if (errno == ENOTDIR)
+		{
+			printf("%s\n", path);
+			return;
+		}
 		handle_errors(program_name, path);
 		return;
 	}
