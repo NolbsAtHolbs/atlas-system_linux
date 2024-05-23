@@ -5,8 +5,9 @@
 * @path: Path to the directory
 * @program_name: Name of the program (argv[0])
 * @single_column: Flag indicating if output should be single column
+* @show_all: Flag indicating if hidden files should be shown
 */
-void list_directory(char *path, char *program_name, int single_column)
+void list_directory(char *path, char *program_name, int single_column, int show_all)
 {
 	DIR *dir;
 	char **entries;
@@ -30,7 +31,7 @@ void list_directory(char *path, char *program_name, int single_column)
 		return;
 	}
 
-	entries = read_entries(dir, &count, program_name);
+	entries = read_entries(dir, &count, program_name, show_all);
 	closedir(dir);
 
 	sort_entries(entries, count);
@@ -48,10 +49,11 @@ void list_directory(char *path, char *program_name, int single_column)
 * @dir: Directory stream
 * @count: Pointer to count of entries
 * @program_name: Name of the program for error messages
+* @show_all: Flag indicating if hidden files should be shown
 *
 * Return: Array of entries
- */
-char **read_entries(DIR *dir, int *count, char *program_name)
+*/
+char **read_entries(DIR *dir, int *count, char *program_name, int show_all)
 {
 	struct dirent *entry;
 	char **entries;
@@ -63,7 +65,7 @@ char **read_entries(DIR *dir, int *count, char *program_name)
 
 	while ((entry = readdir(dir)) != NULL)
 	{
-		if (entry->d_name[0] != '.')
+		if (show_all || entry->d_name[0] != '.')
 		{
 			if (*count >= size)
 			{

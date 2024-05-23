@@ -1,4 +1,5 @@
 #include "hls.h"
+
 /**
 * main - main program
 * @argc: Number of arguments
@@ -10,19 +11,22 @@ int main(int argc, char *argv[])
 {
 	int i;
 	int single_column = 0;
+	int show_all = 0;
 	int start = 1;
 	int file_count = 0;
 	DIR *dir;
-	process_arguments(argc, argv, &single_column, &start);
+
+	process_arguments(argc, argv, &single_column, &show_all, &start);
 	file_count = count_files_and_folders(argc, argv, start);
+
 	if (file_count == 0)
-		list_directory(".", argv[0], single_column);
+		list_directory(".", argv[0], single_column, show_all);
 	else
 	{
 		sort_paths(argc, argv, start);
 		for (i = start; i < argc; i++)
 		{
-			if (is_option_multiple(argv[i], "-1"))
+			if (is_option_multiple(argv[i], "-1") || is_option(argv[i], "-a"))
 				continue;
 			dir = opendir(argv[i]);
 			if (dir == NULL && errno != ENOTDIR)
@@ -34,21 +38,23 @@ int main(int argc, char *argv[])
 				closedir(dir);
 			if (file_count > 1 && dir != NULL)
 				printf("%s:\n", argv[i]);
-			list_directory(argv[i], argv[0], single_column);
-			if (i < argc - 1 && !is_option_multiple(argv[i + 1], "-1"))
+			list_directory(argv[i], argv[0], single_column, show_all);
+			if (i < argc - 1 && !is_option_multiple(argv[i + 1], "-1") && !is_option(argv[i + 1], "-a"))
 				printf("\n");
 		}
 	}
 	return (0);
 }
+
 /**
 * process_arguments - Processes command-line arguments
 * @argc: Number of arguments
 * @argv: Array of arguments
 * @single_column: Pointer to the single column flag
+* @show_all: Pointer to the show all flag
 * @start: Pointer to the start index
 */
-void process_arguments(int argc, char *argv[], int *single_column, int *start)
+void process_arguments(int argc, char *argv[], int *single_column, int *show_all, int *start)
 {
 	int i;
 
@@ -59,12 +65,18 @@ void process_arguments(int argc, char *argv[], int *single_column, int *start)
 			*single_column = 1;
 			(*start)++;
 		}
+		else if (is_option(argv[i], "-a"))
+		{
+			*show_all = 1;
+			(*start)++;
+		}
 		else
 		{
 			break;
 		}
 	}
 }
+
 /**
 * is_option - Checks if an argument is an option
 * @arg: The argument to check
