@@ -14,7 +14,7 @@ int count_files_and_folders(int argc, char *argv[], int start)
     count = 0;
     for (i = start; i < argc; i++)
     {
-        if (!is_option(argv[i], "-1"))
+        if (!is_option_multiple(argv[i], "-1"))
         {
             count++;
         }

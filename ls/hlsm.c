@@ -54,7 +54,7 @@ void process_arguments(int argc, char *argv[], int *single_column, int *start)
 
 	for (i = 1; i < argc; i++)
 	{
-		if (is_option(argv[i], "-1"))
+		if (is_option_multiple(argv[i], "-1"))
 		{
 			*single_column = 1;
 			(*start)++;

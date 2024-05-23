@@ -1,9 +1,11 @@
 #ifndef HLS_H
 #define HLS_H
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <dirent.h>
 #include <errno.h>
+
 void handle_errors(char *program_name, char *path);
 char *my_strdup(const char *s, char *program_name);
 void *xmalloc(size_t size, char *program_name);
