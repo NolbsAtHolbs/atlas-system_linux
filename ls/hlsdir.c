@@ -10,7 +10,8 @@ void list_directory(char *path, char *program_name, int single_column)
 {
 	DIR *dir;
 	char **entries;
-	int count, i;
+	int count;
+	int i;
 
 	if (single_column)
 	{

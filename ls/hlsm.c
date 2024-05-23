@@ -16,21 +16,16 @@ int main(int argc, char *argv[])
 	DIR *dir;
 
 	process_arguments(argc, argv, &single_column, &start);
-	for (i = start; i < argc; i++)
-	{
-		if (!is_option(argv[i], "-1"))
-			file_count++;
-	}
-
+	file_count = count_files_and_folders(argc, argv, start);
 	if (file_count == 0)
 		list_directory(".", argv[0], single_column);
 	else
 	{
+		sort_paths(argc, argv, start);
 		for (i = start; i < argc; i++)
 		{
 			if (is_option(argv[i], "-1"))
 				continue;
-
 			dir = opendir(argv[i]);
 			if (dir == NULL && errno != ENOTDIR)
 			{
@@ -39,11 +34,13 @@ int main(int argc, char *argv[])
 			}
 			if (dir != NULL)
 				closedir(dir);
-
 			if (file_count > 1 && dir != NULL)
+			{
 				printf("%s:\n", argv[i]);
-
+			}
 			list_directory(argv[i], argv[0], single_column);
+			if (i < argc - 1 && !is_option(argv[i + 1], "-1"))
+				printf("\n");
 		}
 	}
 	return (0);
@@ -94,6 +91,5 @@ int is_option(char *arg, const char *option)
 	{
 		return (1);
 	}
-
 	return (0);
 }
