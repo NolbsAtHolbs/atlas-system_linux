@@ -1,5 +1,5 @@
-#ifndef HlS_H
-#define HlS_H
+#ifndef HLS_H
+#define HLS_H
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -12,5 +12,9 @@ void *xmalloc(size_t size, char *program_name);
 void *xrealloc(void *ptr, size_t size, char *program_name);
 void sort_entries(char **entries, int count);
 int compare_strings(const char *a, const char *b);
+int is_option(char *arg, const char *option);
+void list_directory(char *path, char *program_name, int single_column);
+char **read_entries(DIR *dir, int *count, char *program_name);
+void process_arguments(int argc, char *argv[], int *single_column, int *start);
 
 #endif

@@ -76,7 +76,7 @@ void *xmalloc(size_t size, char *program_name)
 * @program_name: Name of the program for error messages
 *
 * Return: Pointer to reallocated memory
-*/
+ */
 void *xrealloc(void *ptr, size_t size, char *program_name)
 {
 	ptr = realloc(ptr, size);
