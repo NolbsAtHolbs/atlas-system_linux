@@ -21,7 +21,7 @@ int count_files_and_folders(int argc, char *argv[], int start)
             count++;
         }
     }
-    return count;
+    return (count);
 }
 
 /**
@@ -40,7 +40,8 @@ void sort_paths(int argc, char *argv[], int start)
     {
         for (j = i + 1; j < argc; j++)
         {
-            if (!is_option(argv[i], "-1") && !is_option(argv[j], "-1"))
+            if ((!is_option_multiple(argv[i], "-1")) &&
+				(!is_option_multiple(argv[j], "-1")))
             {
                 if (compare_paths(argv[i], argv[j]) > 0)
                 {

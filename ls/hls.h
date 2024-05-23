@@ -19,5 +19,6 @@ void process_arguments(int argc, char *argv[], int *single_column, int *start);
 int count_files_and_folders(int argc, char *argv[], int start);
 void sort_paths(int argc, char *argv[], int start);
 int compare_paths(char *a, char *b);
+int is_option_multiple(char *arg, const char *option);
 
 #endif
