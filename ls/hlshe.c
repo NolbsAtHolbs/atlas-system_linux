@@ -56,28 +56,34 @@ void sort_paths(int argc, char *argv[], int start)
  *
  * Return: Negative if a < b, zero if a == b, positive if a > b
  */
-int compare_paths(char *a, char *b)
+int compare_paths(const char *a, const char *b)
 {
-    while (*a && *b)
-    {
-        if (*a < *b)
-        {
-            return (-1);
-        }
-        if (*a > *b)
-        {
-            return (1);
-        }
-        a++;
-        b++;
-    }
-    if (*a == '\0' && *b == '\0')
-    {
-        return (0);
-    }
-    if (*a == '\0')
-    {
-        return (-1);
-    }
-    return (1);
+	char lower_a;
+	char lower_b;
+
+	while (*a && *b)
+	{
+		lower_a = (*a >= 'A' && *a <= 'Z') ? *a + 32 : *a;
+		lower_b = (*b >= 'A' && *b <= 'Z') ? *b + 32 : *b;
+
+		if (lower_a < lower_b)
+		{
+			return (-1);
+		}
+		if (lower_a > lower_b)
+		{
+			return (1);
+		}
+		a++;
+		b++;
+	}
+	if (*a == '\0' && *b == '\0')
+	{
+		return (0);
+	}
+	if (*a == '\0')
+	{
+		return (-1);
+	}
+	return (1);
 }
