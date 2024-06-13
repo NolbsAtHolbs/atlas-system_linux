@@ -36,7 +36,6 @@ def find_and_replace(pid, search_str, replace_str):
                     break
 
             if not heap_region:
-                print("Heap region not found")
                 return
 
             heap_start, heap_end = [int(x, 16) for x in heap_region.split('-')]
@@ -50,21 +49,18 @@ def find_and_replace(pid, search_str, replace_str):
             index = heap_data.find(search_bytes)
 
             if index == -1:
-                print("Search string not found in heap")
                 return
 
             mem_file.seek(heap_start + index)
-            mem_file.write(replace_bytes + heap_data[index + len(
-                            search_bytes):index + len(replace_bytes)])
-            print(f"Replaced '{search_str}' with \
-                  '{replace_str}' at offset {index}")
+            mem_file.write(replace_bytes + b'\0' * (
+                len(search_bytes) - len(replace_bytes)))
 
     except FileNotFoundError:
-        print("Invalid PID or process does not exist")
+        pass
     except PermissionError:
-        print("Permission denied. Try running as root")
+        pass
     except Exception as e:
-        print(f"An error occurred: {e}")
+        pass
 
 
 if __name__ == "__main__":
@@ -77,9 +73,5 @@ if __name__ == "__main__":
 
     if not pid.isdigit():
         print_usage()
-
-    if len(search_string) != len(replace_string):
-        print("Search string and replace string must be same length")
-        sys.exit(1)
 
     find_and_replace(pid, search_string, replace_string)
