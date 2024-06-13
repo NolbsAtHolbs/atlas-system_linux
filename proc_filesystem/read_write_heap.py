@@ -1,5 +1,7 @@
 #!/usr/bin/python3
-"""Script that finds a string in heap of a running process and replaces it."""
+"""
+Script that finds a string in heap of a running process and replaces it
+"""
 
 import sys
 
