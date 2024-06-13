@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 """Script that finds a string in heap of a running process and replaces it."""
 
 import sys
@@ -46,6 +46,10 @@ def find_and_replace(pid, search_str, replace_str):
             print(f"Replaced '{search_str}' with
                   '{replace_str}' at offset {index}")
 
+    except FileNotFoundError:
+        print("Invalid PID or process does not exist")
+    except PermissionError:
+        print("Permission denied. Try running as root")
     except Exception as e:
         print(f"An error occurred: {e}")
 
