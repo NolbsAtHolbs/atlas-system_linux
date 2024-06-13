@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 """
-This script finds a string in the heap of a running process and replaces it.
+This script finds a string in the heap of a running process and replaces it
 
 Usage:
     read_write_heap.py pid search_string replace_string
@@ -54,8 +54,8 @@ def find_and_replace(pid, search_str, replace_str):
                 return
 
             mem_file.seek(heap_start + index)
-            mem_file.write(replace_bytes + b'\0' * (
-                len(search_bytes) - len(replace_bytes)))
+            mem_file.write(replace_bytes + heap_data[index + len(
+                            search_bytes):index + len(replace_bytes)])
             print(f"Replaced '{search_str}' with \
                   '{replace_str}' at offset {index}")
 
