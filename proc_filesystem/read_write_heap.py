@@ -1,6 +1,9 @@
 #!/usr/bin/python3
 """
 Script that finds a string in heap of a running process and replaces it
+
+Usage:
+    read_write_heap.py pid search_string replace_string
 """
 
 import sys
@@ -12,7 +15,14 @@ def print_usage():
 
 
 def find_and_replace(pid, search_str, replace_str):
-    """Prints usage information and exits with status code 1"""
+    """
+    Prints usage information and exits with status code 1
+    
+    Args:
+        pid (str): process ID of the running process
+        search_str (str): string to search for in the heap
+        replace_str (str): string to replace the search string with
+    """
     maps_path = f"/proc/{pid}/maps"
     mem_path = f"/proc/{pid}/mem"
 
