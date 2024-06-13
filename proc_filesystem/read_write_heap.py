@@ -1,9 +1,14 @@
 #!/usr/bin/python3
 """
-Script that finds a string in heap of a running process and replaces it
+This script finds a string in the heap of a running process and replaces it.
 
 Usage:
     read_write_heap.py pid search_string replace_string
+
+Arguments:
+    pid             : Process ID of the target running process
+    search_string   : ASCII string to search for in the heap
+    replace_string  : ASCII string to replace the search string with
 """
 
 import sys
@@ -17,7 +22,7 @@ def print_usage():
 def find_and_replace(pid, search_str, replace_str):
     """
     Prints usage information and exits with status code 1
-    
+
     Args:
         pid (str): process ID of the running process
         search_str (str): string to search for in the heap
@@ -55,7 +60,7 @@ def find_and_replace(pid, search_str, replace_str):
             mem_file.seek(heap_start + index)
             mem_file.write(replace_bytes + heap_data[index + len(
                             search_bytes):index + len(replace_bytes)])
-            print(f"Replaced '{search_str}' with
+            print(f"Replaced '{search_str}' with \
                   '{replace_str}' at offset {index}")
 
     except FileNotFoundError:
