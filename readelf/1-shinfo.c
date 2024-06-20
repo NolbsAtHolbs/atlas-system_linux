@@ -105,14 +105,11 @@ static const char *get_section_flags(uint64_t sh_flags)
 	if (sh_flags & SHF_STRINGS)    flags[pos++] = 'S';
 	if (sh_flags & SHF_INFO_LINK)  flags[pos++] = 'I';
 	if (sh_flags & SHF_LINK_ORDER) flags[pos++] = 'L';
-	if (sh_flags & SHF_OS_NONCONFORMING) flags[pos++] = 'O';
 	if (sh_flags & SHF_GROUP)      flags[pos++] = 'G';
 	if (sh_flags & SHF_TLS)        flags[pos++] = 'T';
-#ifdef SHF_COMPRESSED
-	if (sh_flags & SHF_COMPRESSED) flags[pos++] = 'C';
-#endif
-	if (sh_flags & SHF_MASKOS)     flags[pos++] = 'o';
 	if (sh_flags & SHF_EXCLUDE)    flags[pos++] = 'E';
+	if (sh_flags & SHF_OS_NONCONFORMING) flags[pos++] = 'O';
+	if (sh_flags & SHF_MASKOS)     flags[pos++] = 'o';
 	if (sh_flags & SHF_MASKPROC)   flags[pos++] = 'p';
 	flags[pos] = '\0';
 
@@ -125,8 +122,7 @@ static const char *get_section_flags(uint64_t sh_flags)
 static void print_section_flags_key(void)
 {
 	printf("Key to Flags:\n");
-	printf("  W (write), A (alloc), X (execute), M (merge), S (strings), I (info),\n");
-	printf("  L (link order), O (extra OS processing required), G (group), T (TLS),\n");
-	printf("  C (compressed), x (unknown), o (OS specific), E (exclude),\n");
-	printf("  p (processor specific)\n");
+	printf("  W (write), A (alloc), X (execute), M (merge), S (strings)\n");
+	printf("  I (info), L (link order), G (group), T (TLS), E (exclude), x (unknown)\n");
+	printf("  O (extra OS processing required), o (OS specific), p (processor specific)\n");
 }
