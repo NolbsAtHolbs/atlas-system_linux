@@ -1,6 +1,11 @@
 #ifndef HREADELF_H
 #define HREADELF_H
 
+#define FH_MAGIC "  Magic:   "
+#define ERR_STR ": Error: "
+#define ERR_OPEN ": File not found"
+#define ERR_ELF "Not an ELF file"
+
 #include <elf.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -9,12 +14,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-
-#define ERR_STR ": Error: "
-#define ERR_OPEN ": File not found"
-#define ERR_ELF "Not an ELF file"
-
-#define FH_MAGIC "  Magic:   "
 
 typedef struct
 {
