@@ -1,12 +1,21 @@
 CC = gcc
-CFLAGS = -Wall -Werror -Wextra -pedantic
+CFLAGS = -Wall -Wextra -Werror -pedantic
 TARGET = 0-hreadelf
+SRCS = 0-are.c 0-fhinfo.c 0-swaps.c
+OBJS = $(SRCS:.c=.o)
+HDRS = hreadelf.h
 
-0-hreadelf: 0-hreadelf.o
-	$(CC) $(CFLAGS) -o $(TARGET) 0-hreadelf.o
+all: $(TARGET)
 
-0-hreadelf.o: 0-hreadelf.c
-	$(CC) $(CFLAGS) -c 0-hreadelf.c
+$(TARGET): $(OBJS)
+	$(CC) $(CFLAGS) -o $(TARGET) $(OBJS)
+
+%.o: %.c $(HDRS)
+	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm -f *.o $(TARGET)
+	rm -f $(OBJS) $(TARGET)
+
+rebuild: clean all
+
+.PHONY: all clean rebuild
