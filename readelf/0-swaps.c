@@ -1,10 +1,10 @@
 #include "hreadelf.h"
 
-prog_dt prog;
-
 static uint16_t bswap16(uint16_t num);
 static uint32_t bswap32(uint32_t num);
 static uint64_t bswap64(uint64_t num);
+
+prog_dt prog;
 
 int is_elf(const char *fd_map)
 {
