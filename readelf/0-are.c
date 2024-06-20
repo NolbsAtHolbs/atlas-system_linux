@@ -67,12 +67,12 @@ static void process_file_header(elf_dt *elfen)
 	{
         if (prog.endianness == 2)
             convert_endian_32(&elfen->fh32);
-        print_elf_details_32(&elfen->fh32);
+        print_elf_info_32(&elfen->fh32);
     }
 	else
 	{
         if (prog.endianness == 2)
             convert_endian_64(&elfen->fh64);
-        print_elf_details_64(&elfen->fh64);
+        print_elf_info_64(&elfen->fh64);
     }
 }

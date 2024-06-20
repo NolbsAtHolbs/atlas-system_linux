@@ -5,7 +5,7 @@ static void print_osabi(unsigned char osabi);
 static void print_type(uint16_t type);
 static void print_machine(uint16_t machine);
 
-void print_elf_details_32(const Elf32_Ehdr *hdr)
+void print_elf_info_32(const Elf32_Ehdr *hdr)
 {
     printf(FH_MAGIC);
     print_magic(hdr->e_ident);
@@ -32,7 +32,7 @@ void print_elf_details_32(const Elf32_Ehdr *hdr)
     printf("  %-35s%d\n", "Section header string table index:", hdr->e_shstrndx);
 }
 
-void print_elf_details_64(const Elf64_Ehdr *hdr)
+void print_elf_info_64(const Elf64_Ehdr *hdr)
 {
     printf(FH_MAGIC);
     print_magic(hdr->e_ident);
