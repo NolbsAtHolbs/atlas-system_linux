@@ -1,84 +1,79 @@
 #include "hreadelf.h"
 
-static uint16_t bswap16(uint16_t num);
-static uint32_t bswap32(uint32_t num);
-static uint64_t bswap64(uint64_t num);
-
-prog_dt prog;
-
-int is_elf(const char *fd_map)
+/**
+ * is_elf - checks if ELF file
+ * @fd_map: mmap of input file
+ * Return: 1 if magic number found (ELF), 0 otherwise (not ELF)
+*/
+int is_elf(char *fd_map)
 {
-    return !memcmp(fd_map, ELFMAG, 4);
+	return (!memcmp(fd_map, ELFMAG, 4));
 }
 
+/**
+ * error_manager - prints error and/or closes fd
+ * @cause: case handling
+ * @err: used for exit status
+*/
 void error_manager(int cause, int err)
 {
-    if (prog.fd && prog.fd != -1)
-        close(prog.fd);
-
-    switch (cause)
+	if (prog.fd && prog.fd != -1)
+		close(prog.fd);
+	switch (cause)
 	{
-        case 1:
-            fprintf(stderr, "%s%s'%s'%s\n", prog.name, ERR_STR, prog.file, ERR_OPEN);
-            break;
-        case 2:
-            fprintf(stderr, "%s%s%s\n", prog.name, ERR_STR, ERR_ELF);
-            break;
-        default:
-            break;
-    }
-    exit(err);
+		case 0:
+			break;
+		case 1:
+			fprintf(stderr, "%s%s'%s'%s\n",
+				prog.name, ERR_STR, prog.file, ERR_OPEN);
+			break;
+		case 2:
+			fprintf(stderr, "%s%s%s\n", prog.name, ERR_STR, ERR_ELF);
+			break;
+		default:
+			break;
+	}
+	exit(err);
 }
 
-void convert_endian_32(Elf32_Ehdr *hdr)
+/**
+ * convert_endian_32 - converts 32-bit ELF data
+ * @data: pointer to the data
+ * @size: size of the data
+*/
+void convert_endian_32(void *data, size_t size)
 {
-    hdr->e_type = bswap16(hdr->e_type);
-    hdr->e_machine = bswap16(hdr->e_machine);
-    hdr->e_version = bswap32(hdr->e_version);
-    hdr->e_entry = bswap32(hdr->e_entry);
-    hdr->e_phoff = bswap32(hdr->e_phoff);
-    hdr->e_shoff = bswap32(hdr->e_shoff);
-    hdr->e_flags = bswap32(hdr->e_flags);
-    hdr->e_ehsize = bswap16(hdr->e_ehsize);
-    hdr->e_phentsize = bswap16(hdr->e_phentsize);
-    hdr->e_phnum = bswap16(hdr->e_phnum);
-    hdr->e_shentsize = bswap16(hdr->e_shentsize);
-    hdr->e_shnum = bswap16(hdr->e_shnum);
-    hdr->e_shstrndx = bswap16(hdr->e_shstrndx);
+	uint32_t *num = data;
+	size_t i;
+
+	for (i = 0; i < size / sizeof(uint32_t); i++)
+	{
+		num[i] = ((num[i] >> 24) & 0xff) |
+				 ((num[i] >> 8) & 0xff00) |
+				 ((num[i] << 8) & 0xff0000) |
+				 ((num[i] << 24) & 0xff000000);
+	}
 }
 
-void convert_endian_64(Elf64_Ehdr *hdr)
+/**
+ * convert_endian_64 - converts 64-bit ELF data
+ * @data: pointer to the data
+ * @size: size of the data
+*/
+void convert_endian_64(void *data, size_t size)
 {
-    hdr->e_type = bswap16(hdr->e_type);
-    hdr->e_machine = bswap16(hdr->e_machine);
-    hdr->e_version = bswap32(hdr->e_version);
-    hdr->e_entry = bswap64(hdr->e_entry);
-    hdr->e_phoff = bswap64(hdr->e_phoff);
-    hdr->e_shoff = bswap64(hdr->e_shoff);
-    hdr->e_flags = bswap32(hdr->e_flags);
-    hdr->e_ehsize = bswap16(hdr->e_ehsize);
-    hdr->e_phentsize = bswap16(hdr->e_phentsize);
-    hdr->e_phnum = bswap16(hdr->e_phnum);
-    hdr->e_shentsize = bswap16(hdr->e_shentsize);
-    hdr->e_shnum = bswap16(hdr->e_shnum);
-    hdr->e_shstrndx = bswap16(hdr->e_shstrndx);
-}
+	uint64_t *num = data;
+	size_t i;
 
-static uint16_t bswap16(uint16_t num)
-{
-    return ((num >> 8) & 0xff) | ((num << 8) & 0xff00);
-}
-
-static uint32_t bswap32(uint32_t num)
-{
-    return ((num >> 24) & 0xff) | ((num >> 8) & 0xff00) |
-           ((num << 8) & 0xff0000) | ((num << 24) & 0xff000000);
-}
-
-static uint64_t bswap64(uint64_t num)
-{
-    return ((num >> 56) & 0xff) | ((num >> 40) & 0xff00) |
-           ((num >> 24) & 0xff0000) | ((num >> 8) & 0xff000000) |
-           ((num << 8) & 0xff00000000) | ((num << 24) & 0xff0000000000) |
-           ((num << 40) & 0xff000000000000) | ((num << 56) & 0xff00000000000000);
+	for (i = 0; i < size / sizeof(uint64_t); i++)
+	{
+		num[i] = ((num[i] >> 56) & 0xff) |
+				 ((num[i] >> 40) & 0xff00) |
+				 ((num[i] >> 24) & 0xff0000) |
+				 ((num[i] >> 8) & 0xff000000) |
+				 ((num[i] << 8) & 0xff00000000) |
+				 ((num[i] << 24) & 0xff0000000000) |
+				 ((num[i] << 40) & 0xff000000000000) |
+				 ((num[i] << 56) & 0xff00000000000000);
+	}
 }

@@ -1,113 +1,238 @@
 #include "hreadelf.h"
 
-static void print_magic(const unsigned char *ident);
-static void print_osabi(unsigned char osabi);
-static void print_type(uint16_t type);
-static void print_machine(uint16_t machine);
+static void magic_(unsigned char *ident);
+static void class_(unsigned char clas);
+static void data_(unsigned char dat);
+static void version_(unsigned char version);
+static void osabi_(unsigned char osabi);
+static void type_(uint16_t type);
+static void machine_(uint16_t machine);
 
-void print_elf_info_32(const Elf32_Ehdr *hdr)
+/**
+ * fh_details_32 - provides info for 32-bit ELF file
+ * @map_32: info for 32-bit input file
+*/
+void fh_details_32(Elf32_Ehdr *map_32)
 {
-    printf(FH_MAGIC);
-    print_magic(hdr->e_ident);
-    printf("  %-35sELF32\n", "Class:");
-    printf("  %-35s%s\n", "Data:",
-           hdr->e_ident[EI_DATA] == ELFDATA2LSB ?
-           "2's complement, little endian" :
-           "2's complement, big endian");
-    printf("  %-35s%d (current)\n", "Version:", hdr->e_ident[EI_VERSION]);
-    print_osabi(hdr->e_ident[EI_OSABI]);
-    printf("  %-35s%d\n", "ABI Version:", hdr->e_ident[EI_ABIVERSION]);
-    print_type(hdr->e_type);
-    print_machine(hdr->e_machine);
-    printf("  %-35s0x%x\n", "Version:", hdr->e_version);
-    printf("  %-35s0x%x\n", "Entry point address:", hdr->e_entry);
-    printf("  %-35s%d (bytes into file)\n", "Start of program headers:", hdr->e_phoff);
-    printf("  %-35s%d (bytes into file)\n", "Start of section headers:", hdr->e_shoff);
-    printf("  %-35s0x%x\n", "Flags:", hdr->e_flags);
-    printf("  %-35s%d (bytes)\n", "Size of this header:", hdr->e_ehsize);
-    printf("  %-35s%d (bytes)\n", "Size of program headers:", hdr->e_phentsize);
-    printf("  %-35s%d\n", "Number of program headers:", hdr->e_phnum);
-    printf("  %-35s%d (bytes)\n", "Size of section headers:", hdr->e_shentsize);
-    printf("  %-35s%d\n", "Number of section headers:", hdr->e_shnum);
-    printf("  %-35s%d\n", "Section header string table index:", hdr->e_shstrndx);
+	printf("  Magic:   "), magic_(map_32->e_ident);
+	printf("  %-35s", FH_CLASS), class_(map_32->e_ident[EI_CLASS]);
+	printf("  %-35s", FH_DATA), data_(map_32->e_ident[EI_DATA]);
+	printf("  %-35s", FH_VERSION), version_(map_32->e_ident[EI_VERSION]);
+	printf("  %-35s", FH_OSABI), osabi_(map_32->e_ident[EI_OSABI]);
+	printf("  %-35s%d\n", FH_ABIVERSION, map_32->e_ident[EI_ABIVERSION]);
+	printf("  %-35s", FH_TYPE), type_(map_32->e_type);
+	printf("  %-35s", FH_MACHINE), machine_(map_32->e_machine);
+	printf("  %-35s%#x\n", FH_EVERSION, map_32->e_version);
+	printf("  %-35s0x%x\n", FH_ENTRY, map_32->e_entry);
+	printf("  %-35s%d (bytes into file)\n", FH_PHOFF, map_32->e_phoff);
+	printf("  %-35s%d (bytes into file)\n", FH_SHOFF, map_32->e_shoff);
+	printf("  %-35s0x%x\n", FH_FLAGS, map_32->e_flags);
+	printf("  %-35s%d (bytes)\n", FH_EHSIZE, map_32->e_ehsize);
+	printf("  %-35s%d (bytes)\n", FH_PHENTSIZ, map_32->e_phentsize);
+	printf("  %-35s%d\n", FH_PHNUM, map_32->e_phnum);
+	printf("  %-35s%d (bytes)\n", FH_SHENTSIZ, map_32->e_shentsize);
+	printf("  %-35s%d\n", FH_SHNUM, map_32->e_shnum);
+	printf("  %-35s%d\n", FH_SHSTRNDX, map_32->e_shstrndx);
 }
 
-void print_elf_info_64(const Elf64_Ehdr *hdr)
+/**
+ * fh_details_64 - prints file header information for 64-bit ELF file
+ * @map_64: Elf64_Ehdr info struct for 64-bit input file
+*/
+void fh_details_64(Elf64_Ehdr *map_64)
 {
-    printf(FH_MAGIC);
-    print_magic(hdr->e_ident);
-    printf("  %-35sELF64\n", "Class:");
-    printf("  %-35s%s\n", "Data:",
-           hdr->e_ident[EI_DATA] == ELFDATA2LSB ?
-           "2's complement, little endian" :
-           "2's complement, big endian");
-    printf("  %-35s%d (current)\n", "Version:", hdr->e_ident[EI_VERSION]);
-    print_osabi(hdr->e_ident[EI_OSABI]);
-    printf("  %-35s%d\n", "ABI Version:", hdr->e_ident[EI_ABIVERSION]);
-    print_type(hdr->e_type);
-    print_machine(hdr->e_machine);
-    printf("  %-35s0x%x\n", "Version:", hdr->e_version);
-    printf("  %-35s0x%lx\n", "Entry point address:", hdr->e_entry);
-    printf("  %-35s%ld (bytes into file)\n", "Start of program headers:", hdr->e_phoff);
-    printf("  %-35s%ld (bytes into file)\n", "Start of section headers:", hdr->e_shoff);
-    printf("  %-35s0x%x\n", "Flags:", hdr->e_flags);
-    printf("  %-35s%d (bytes)\n", "Size of this header:", hdr->e_ehsize);
-    printf("  %-35s%d (bytes)\n", "Size of program headers:", hdr->e_phentsize);
-    printf("  %-35s%d\n", "Number of program headers:", hdr->e_phnum);
-    printf("  %-35s%d (bytes)\n", "Size of section headers:", hdr->e_shentsize);
-    printf("  %-35s%d\n", "Number of section headers:", hdr->e_shnum);
-    printf("  %-35s%d\n", "Section header string table index:", hdr->e_shstrndx);
+	printf("  Magic:   "), magic_(map_64->e_ident);
+	printf("  %-35s", FH_CLASS), class_(map_64->e_ident[EI_CLASS]);
+	printf("  %-35s", FH_DATA), data_(map_64->e_ident[EI_DATA]);
+	printf("  %-35s", FH_VERSION), version_(map_64->e_ident[EI_VERSION]);
+	printf("  %-35s", FH_OSABI), osabi_(map_64->e_ident[EI_OSABI]);
+	printf("  %-35s%d\n", FH_ABIVERSION, map_64->e_ident[EI_ABIVERSION]);
+	printf("  %-35s", FH_TYPE), type_(map_64->e_type);
+	printf("  %-35s", FH_MACHINE), machine_(map_64->e_machine);
+	printf("  %-35s%#x\n", FH_EVERSION, map_64->e_version);
+	printf("  %-35s0x%lx\n", FH_ENTRY, map_64->e_entry);
+	printf("  %-35s%ld (bytes into file)\n", FH_PHOFF, map_64->e_phoff);
+	printf("  %-35s%ld (bytes into file)\n", FH_SHOFF, map_64->e_shoff);
+	printf("  %-35s0x%x\n", FH_FLAGS, map_64->e_flags);
+	printf("  %-35s%d (bytes)\n", FH_EHSIZE, map_64->e_ehsize);
+	printf("  %-35s%d (bytes)\n", FH_PHENTSIZ, map_64->e_phentsize);
+	printf("  %-35s%d\n", FH_PHNUM, map_64->e_phnum);
+	printf("  %-35s%d (bytes)\n", FH_SHENTSIZ, map_64->e_shentsize);
+	printf("  %-35s%d\n", FH_SHNUM, map_64->e_shnum);
+	printf("  %-35s%d\n", FH_SHSTRNDX, map_64->e_shstrndx);
 }
 
-static void print_magic(const unsigned char *ident)
+/**
+ * magic_ - prints EI_NIDENT bytes from ELF file
+ * @ident: array of identifying bytes from ELF file
+*/
+static void magic_(unsigned char *ident)
 {
-    int i;
+	int iter = 0;
 
-    for (i = 0; i < EI_NIDENT; i++)
+	for (; iter != EI_NIDENT; iter++)
+		printf("%.2x ", ident[iter]);
+	putchar('\n');
+}
+
+/**
+ * class_ - prints file class of input file
+ * @clas: unsigned char representing file class of ELF file
+*/
+static void class_(unsigned char clas)
+{
+	switch (clas)
 	{
-        printf("%.2x ", ident[i]);
-    }
-    printf("\n");
+		case ELFCLASS32:
+			printf("ELF32");
+			break;
+		case ELFCLASS64:
+			printf("ELF64");
+			break;
+		case ELFCLASSNONE:
+			printf("none");
+			break;
+		default:
+			printf("<unknown: %x>", clas);
+			break;
+	}
+	putchar('\n');
 }
 
-static void print_osabi(unsigned char osabi)
+/**
+ * data_ - prints endianness of ELF file
+ * @dat: unsigned char representing endianness of ELF file
+*/
+static void data_(unsigned char dat)
 {
-    printf("  %-35s", "OS/ABI:");
-    switch (osabi)
+	switch (dat)
 	{
-        case ELFOSABI_SYSV: printf("UNIX - System V\n"); break;
-        case ELFOSABI_NETBSD: printf("UNIX - NetBSD\n"); break;
-        case ELFOSABI_GNU: printf("UNIX - GNU\n"); break;
-        case ELFOSABI_SOLARIS: printf("UNIX - Solaris\n"); break;
-        case ELFOSABI_FREEBSD: printf("UNIX - FreeBSD\n"); break;
-        case ELFOSABI_OPENBSD: printf("UNIX - OpenBSD\n"); break;
-        case ELFOSABI_ARM: printf("UNIX - ARM\n"); break;
-        default: printf("<unknown: %x>\n", osabi); break;
-    }
+		case ELFDATA2LSB:
+			printf("2's complement, little endian");
+			prog.endianness = ELFDATA2LSB;
+			break;
+		case ELFDATA2MSB:
+			printf("2's complement, big endian");
+			prog.endianness = ELFDATA2MSB;
+			break;
+		case ELFDATANONE:
+			printf("none");
+			break;
+		default:
+			printf("<unknown: %x>", dat);
+			break;
+	}
+	putchar('\n');
 }
 
-static void print_type(uint16_t type)
+/**
+ * version_ - prints ELF version of input ELF file
+ * @version: unsigned char representing version of ELF file
+*/
+static void version_(unsigned char version)
 {
-    printf("  %-35s", "Type:");
-    switch (type)
+	switch (version)
 	{
-        case ET_NONE: printf("NONE (None)\n"); break;
-        case ET_REL: printf("REL (Relocatable file)\n"); break;
-        case ET_EXEC: printf("EXEC (Executable file)\n"); break;
-        case ET_DYN: printf("DYN (Shared object file)\n"); break;
-        case ET_CORE: printf("CORE (Core file)\n"); break;
-        default: printf("<unknown: %x>\n", type); break;
-    }
+		case EV_CURRENT:
+			printf("%d (current)", version);
+			break;
+		case EV_NONE:
+			fprintf(stderr, "%s: Error: Invalid ELF version\n", prog.name);
+			error_manager(0, 1);
+			break;
+		default:
+			printf("<unknown: %x>", version);
+			break;
+	}
+	putchar('\n');
 }
 
-static void print_machine(uint16_t machine)
+/**
+ * osabi_ - prints OS/ABI identification of input ELF file
+ * @osabi: unsigned char representing OS/ABI
+*/
+static void osabi_(unsigned char osabi)
 {
-    printf("  %-35s", "Machine:");
-    switch (machine)
+	switch (osabi)
 	{
-        case EM_X86_64: printf("Advanced Micro Devices X86-64\n"); break;
-        case EM_386: printf("Intel 80386\n"); break;
-        case EM_SPARC: printf("Sparc\n"); break;
-        default: printf("<unknown: %x>\n", machine); break;
-    }
+		case ELFOSABI_SYSV:
+			printf("UNIX - System V");
+			break;
+		case ELFOSABI_NETBSD:
+			printf("UNIX - NetBSD");
+			break;
+		case ELFOSABI_GNU:
+			printf("UNIX - GNU");
+			break;
+		case ELFOSABI_SOLARIS:
+			printf("UNIX - Solaris");
+			break;
+		case ELFOSABI_FREEBSD:
+			printf("UNIX - FreeBSD");
+			break;
+		case ELFOSABI_OPENBSD:
+			printf("UNIX - OpenBSD");
+			break;
+		case ELFOSABI_ARM:
+			printf("UNIX - ARM");
+			break;
+		default:
+			printf("<unknown: %x>", osabi);
+			break;
+	}
+	putchar('\n');
+}
+
+/**
+ * type_ - prints file type of ELF file
+ * @type: 16-bit unsigned integer representing object file type
+*/
+static void type_(uint16_t type)
+{
+	switch (type)
+	{
+		case ET_NONE:
+			printf("NONE (None)");
+			break;
+		case ET_REL:
+			printf("REL (Relocatable file)");
+			break;
+		case ET_EXEC:
+			printf("EXEC (Executable file)");
+			break;
+		case ET_DYN:
+			printf("DYN (Shared object file)");
+			/* printf("DYN (Position-Independent Executable file)"); */
+			break;
+		case ET_CORE:
+			printf("CORE (Core file)");
+			break;
+		default:
+			break;
+	}
+	putchar('\n');
+}
+
+/**
+ * machine_ - prints designated architecture of input 64-bit ELF file
+ * @machine: 16-bit unsigned integer representing designated architecture
+*/
+static void machine_(uint16_t machine)
+{
+	switch (machine)
+	{
+		case EM_X86_64:
+			printf("Advanced Micro Devices X86-64");
+			break;
+		case EM_386:
+			printf("Intel 80386");
+			break;
+		case EM_SPARC:
+			printf("Sparc");
+			break;
+		default:
+			printf("WIP");
+			break;
+	}
+	putchar('\n');
 }
