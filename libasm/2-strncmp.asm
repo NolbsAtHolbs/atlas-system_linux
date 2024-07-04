@@ -3,35 +3,41 @@ global asm_strncmp
 section .text
 
 asm_strncmp:
-    ; Initialize pointers and counter
-    mov rcx, rdx        ; rcx used as n counter
-    test rcx, rcx       ; Is n = 0?
-    jz _equal           ; If yes, strings are considered equal
+    push rbp
+    mov rbp, rsp
 
-_compare_loop:
-    mov al, byte [rdi]  ; Load byte from s1
-    mov bl, byte [rsi]  ; Load byte from s2
+    test rdx, rdx         ; Check if n is 0
+    jz _equal             ; If n is 0, strings are considered equal
 
-    cmp al, bl			; Compare bytes
-    jne _not_equal      ; If unequal, return difference
+_loop:
+    test rdx, rdx         ; Check if we've compared n characters
+    jz _equal             ; If so, strings are considered equal up to n
 
-    ; Reached end of either string?
+    movzx eax, byte [rdi] ; Load byte from s1
+    movzx ecx, byte [rsi] ; Load byte from s2
+
+    ; Compare the characters
+    cmp al, cl
+    jne _return_diff
+
+    ; Check if we've reached the end of either string
     test al, al
-    jz _equal           ; If end of s1, strings are equal
-    test bl, al
-    jz _equal           ; If end of s2, strings are equal
+    jz _equal
 
-    ; Move to next char
+    ; Move to next character and decrement n
     inc rdi
     inc rsi
-    dec rcx             ; Decrement counter
-    jnz _compare_loop   ; Until 0
+    dec rdx
+    jmp _loop
+
+_return_diff:
+    sub eax, ecx  ; Compute difference
+    jmp _return
 
 _equal:
-    xor rax, rax        ; Return 0
-    ret
+    xor eax, eax  ; Set return value to 0 (strings are equal up to n characters)
 
-_not_equal:
-    sub al, bl			; Calculate difference between chars
-    movsx rax, al       ; Sign extend result to 64 bits
+_return:
+    mov rsp, rbp
+    pop rbp
     ret
