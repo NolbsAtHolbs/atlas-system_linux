@@ -12,7 +12,7 @@ asm_putc:
     mov rsi, rsp        ; pointer to the character on the stack
     mov rdx, 1          ; num of bytes to write
 
-    syscall
+    syscall				; Write
 
     ; Restore stack
     add rsp, 8
