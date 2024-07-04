@@ -3,6 +3,8 @@ global asm_strncmp
 section .text
 
 asm_strncmp:
+	push rbp
+	mov rbp, rsp
     ; Initialize pointers and counter
     mov rcx, rdx        ; rcx used as n counter
     test rcx, rcx       ; Is n = 0?
@@ -29,9 +31,13 @@ _compare_loop:
 
 _equal:
     xor rax, rax        ; Return 0
-    ret
+    jmp _return
 
 _not_equal:
     sub al, bl			; Calculate difference between chars
     movsx rax, al       ; Sign extend result to 64 bits
-    ret
+
+_return:
+	mov rsp, rbp
+	pop rbp
+	ret
