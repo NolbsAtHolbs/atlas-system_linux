@@ -6,8 +6,8 @@
  */
 void signal_interrupt_handler(int portablenumber)
 {
-	printf("Gotcha! [%d]\n", portablenumber); // Expecting portable number 2
-	fflush(stdout);	// Immediately flush output to console
+	printf("Gotcha! [%d]\n", portablenumber); /* Expecting portable number 2 */
+	fflush(stdout);	/* Immediately flush output to console */
 }
 
 /**
