@@ -2,11 +2,11 @@
 
 /**
  * signal_interrupt_handler - Handles the signal-interrupt signal
- * @signum: Signal number
+ * @portablenumber: Signal number code
  */
-void signal_interrupt_handler(int signalnumber)
+void signal_interrupt_handler(int portablenumber)
 {
-	printf("Gotcha! [%d]\n", signalnumber); // Expecting portable number 2
+	printf("Gotcha! [%d]\n", portablenumber); // Expecting portable number 2
 	fflush(stdout);	// Immediately flush output to console
 }
 
