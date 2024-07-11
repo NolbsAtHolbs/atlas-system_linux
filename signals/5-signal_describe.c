@@ -4,7 +4,7 @@
  * main - Prints description of given signal
  * @argc: Argument count
  * @argv: Array containing strings of values of signals to describe
- * Return: EXIT_SUCCESS upon success, EXIT_FAILURE upon incorrect argument supplied
+ * Return: EXIT_SUCCESS, or EXIT_FAILURE on wrong arg value given
  */
 int main(int argc, char **argv)
 {
