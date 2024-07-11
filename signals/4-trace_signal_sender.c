@@ -5,13 +5,12 @@
  * @sn: Signal number
  * @info: Pointer to siginfo_t structure containing signal information
  */
-void sigquit_handler(int sn, siginfo_t *info)
+void sigquit_handler(int sn, siginfo_t *info, void *foo)
 {
-	if (sn == SIGQUIT)
-	{
-		printf("SIGQUIT sent by %d\n", info->si_pid);
-		fflush(stdout);
-	}
+    (void)sn;
+    (void)foo;
+    printf("SIGQUIT sent by %d\n", info->si_pid);
+    fflush(stdout);
 }
 
 /**
@@ -20,16 +19,16 @@ void sigquit_handler(int sn, siginfo_t *info)
  */
 int trace_signal_sender(void)
 {
-	struct sigaction sav;
+    struct sigaction sav;
 
-	sav.sa_sigaction = sigquit_handler;
-	sav.sa_flags = SA_SIGINFO;
-	sigemptyset(&sav.sa_mask);
+    sav.sa_sigaction = sigquit_handler;
+    sav.sa_flags = SA_SIGINFO;
+    sigemptyset(&sav.sa_mask);
 
-	if (sigaction(SIGQUIT, &sav, NULL) == -1)
-	{
-		return (-1);
-	}
+    if (sigaction(SIGQUIT, &sav, NULL) == -1)
+    {
+        return (-1);
+    }
 	else
 	{
 		return (0);
