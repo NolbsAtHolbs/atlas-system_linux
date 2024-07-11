@@ -1,7 +1,5 @@
 #include "signals.h"
 
-static env;
-
 /**
  * sigint_tel - Handles SIGINT catch
  * @sn: Signal number
@@ -10,7 +8,7 @@ void sigint_tel(int sn)
 {
 	printf("Caught %d\n", sn);
 	printf("Signal received\n");
-	siglongjmp(env, 1);
+	fflush(stdout);
 }
 
 /**
@@ -30,12 +28,7 @@ int main(void)
 		perror("sigaction");
 		return (EXIT_FAILURE);
 	}
-	if (sigsetjmp(env, 1) == 0)
-	{
-		pause();
-	}
-	else
-	{
-		return (EXIT_SUCCESS);
-	}
+	pause();
+	return (EXIT_SUCCESS);
+
 }
