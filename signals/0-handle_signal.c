@@ -11,7 +11,7 @@ void signal_interrupt_handler(int portablenumber)
 }
 
 /**
- * handle_signal_error - Returns exit codes for sigint confirmation
+ * handle_signal - Returns exit codes for sigint confirmation
  *
  * Return: 0 on success, -1 on error
  */
