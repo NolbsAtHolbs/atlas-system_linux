@@ -30,5 +30,4 @@ int main(void)
 	}
 	pause();
 	return (EXIT_SUCCESS);
-
 }
