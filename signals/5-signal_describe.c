@@ -1,12 +1,12 @@
 #include "signals.h"
 
 /**
- * _signal_describe - Prints description of given signal
+ * main - Prints description of given signal
  * @argc: Argument count
  * @argv: Array containing strings of values of signals to describe
  * Return: EXIT_SUCCESS upon success, EXIT_FAILURE upon incorrect argument supplied
  */
-int _signal_describe(int argc, char **argv)
+int main(int argc, char **argv)
 {
 	int sn;
 
