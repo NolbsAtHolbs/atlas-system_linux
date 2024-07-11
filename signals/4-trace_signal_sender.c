@@ -1,16 +1,17 @@
 #include "signals.h"
 
 /**
- * sigquit_handler - Signal handler for SIGQUIT
+ * sigquit_halfler - Signal handler for SIGQUIT
  * @sn: Signal number
- * @info: Pointer to siginfo_t structure containing signal information
+ * @si: Pointer to siginfo_t structure containing signal info
+ * @foo: Pointer that does nothing
  */
-void sigquit_handler(int sn, siginfo_t *info, void *foo)
+void sigquit_halfler(int sn, siginfo_t *si, void *foo)
 {
-    (void)sn;
-    (void)foo;
-    printf("SIGQUIT sent by %d\n", info->si_pid);
-    fflush(stdout);
+	(void)sn;
+	(void)foo;
+	printf("SIGQUIT sent by %d\n", si->si_pid);
+	fflush(stdout);
 }
 
 /**
@@ -19,16 +20,16 @@ void sigquit_handler(int sn, siginfo_t *info, void *foo)
  */
 int trace_signal_sender(void)
 {
-    struct sigaction sav;
+	struct sigaction sav;
 
-    sav.sa_sigaction = sigquit_handler;
-    sav.sa_flags = SA_SIGINFO;
-    sigemptyset(&sav.sa_mask);
+	sav.sa_sigaction = sigquit_halfler;
+	sav.sa_flags = SA_SIGINFO;
+	sigemptyset(&sav.sa_mask);
 
-    if (sigaction(SIGQUIT, &sav, NULL) == -1)
-    {
-        return (-1);
-    }
+	if (sigaction(SIGQUIT, &sav, NULL) == -1)
+	{
+		return (-1);
+	}
 	else
 	{
 		return (0);
