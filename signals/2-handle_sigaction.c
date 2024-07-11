@@ -1,6 +1,7 @@
 #include "signals.h"
 
-/* sigint_handler - Signal handler for SIGINT
+/**
+ * sigint_handler - Signal handler for SIGINT
  * @signalnumber: Signal number
  */
 void sigint_handler(int signalnumber)
@@ -9,8 +10,8 @@ void sigint_handler(int signalnumber)
 	fflush(stdout);
 }
 
-/* handle_sigaction - Sets a handler for the signal SIGINT using sigaction
- *
+/**
+ * handle_sigaction - Sets a handler for the signal SIGINT using sigaction
  * Return: 0 on success, -1 on error
  */
 int handle_sigaction(void)
