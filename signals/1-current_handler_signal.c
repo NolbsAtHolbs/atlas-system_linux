@@ -7,6 +7,7 @@
 void (*current_handler_signal(void))(int)
 {
 	void (*current_handler)(int) = signal(SIGINT, SIG_IGN);
+
 	if (signal(SIGINT, current_handler) == SIG_ERR)
 	{
 		return (NULL);
