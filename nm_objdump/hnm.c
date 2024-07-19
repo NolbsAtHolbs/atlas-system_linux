@@ -61,7 +61,6 @@ int main(int argc, char **argv)
 int map_header(elf_hdr *header, int fd, char *prog)
 {
 	struct stat statbuf;
-
 	header->fd = fd;
 	if (fstat(header->fd, &statbuf) == -1)
 	{
@@ -86,9 +85,7 @@ int map_header(elf_hdr *header, int fd, char *prog)
 	header->Flag_OP = (header->Ehdr64->e_ident[EI_CLASS] == ELFCLASS64);
 
 	if (header->Flag_OP)
-	{
 		return (header->Ehdr64 == MAP_FAILED ? -1 : 0);
-	}
 	else
 	{
 		header->fsize32 = (uint32_t)statbuf.st_size;
