@@ -1,101 +1,198 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <libelf.h>
-#include <gelf.h>
+#include "hnm.h"
 
-void print_symbols(const char *filename)
-{
-    int fd;
-    Elf *e;
-    size_t n;
-    GElf_Shdr shdr;
-    Elf_Scn *scn = NULL;
-    Elf_Data *data = NULL;
-
-    if (elf_version(EV_CURRENT) == EV_NONE)
-    {
-        fprintf(stderr, "ELF library initialization failed: %s\n", elf_errmsg(-1));
-        exit(EXIT_FAILURE);
-    }
-
-    if ((fd = open(filename, O_RDONLY, 0)) < 0)
-    {
-        perror("open");
-        exit(EXIT_FAILURE);
-    }
-
-    if ((e = elf_begin(fd, ELF_C_READ, NULL)) == NULL)
-    {
-        fprintf(stderr, "elf_begin() failed: %s.\n", elf_errmsg(-1));
-        exit(EXIT_FAILURE);
-    }
-
-    if (elf_kind(e) != ELF_K_ELF)
-    {
-        fprintf(stderr, "%s is not an ELF object.\n", filename);
-        exit(EXIT_FAILURE);
-    }
-
-    while ((scn = elf_nextscn(e, scn)) != NULL)
-    {
-        gelf_getshdr(scn, &shdr);
-
-        if (shdr.sh_type == SHT_SYMTAB || shdr.sh_type == SHT_DYNSYM)
-        {
-            if ((data = elf_getdata(scn, NULL)) == NULL)
-                continue;
-
-            for (n = 0; n < shdr.sh_size / shdr.sh_entsize; n++)
-            {
-                GElf_Sym sym;
-                gelf_getsym(data, n, &sym);
-
-                char *name = elf_strptr(e, shdr.sh_link, sym.st_name);
-                char type = '?';
-
-                switch (GELF_ST_TYPE(sym.st_info))
-                {
-                case STT_NOTYPE:
-                    type = 'n';
-                    break;
-                case STT_OBJECT:
-                    type = 'd';
-                    break;
-                case STT_FUNC:
-                    type = 't';
-                    break;
-                case STT_SECTION:
-                    type = 's';
-                    break;
-                case STT_FILE:
-                    type = 'f';
-                    break;
-                }
-
-                printf("%016lx %c %s\n", (unsigned long)sym.st_value, type, name);
-            }
-        }
-    }
-
-    elf_end(e);
-    close(fd);
-}
+/**
+ * main - Entry to function
+ * @argc: Num of args
+ * @argv: Array of args
+ * Return: 0 on success, else -1
+ */
 
 int main(int argc, char **argv)
 {
-	int i;
-    if (argc < 2)
-    {
-        fprintf(stderr, "Usage: %s [objfile ...]\n", argv[0]);
-        exit(EXIT_FAILURE);
-    }
+	struct stat info;
+	elf_hdr header;
+	int fd;
 
-    for (i = 1; i < argc; i++)
-    {
-        print_symbols(argv[i]);
-    }
+	if (argc != 2)
+	{
+		fprintf(stderr, "Unsupported number of arguments\n");
+		return (-1);
+	}
+	if (stat(argv[1], &info) == -1)
+	{
+		perror("stat");
+		return (-1);
+	}
+	if (!S_ISREG(info.st_mode))
+	{
+		fprintf(stderr, "%s: Error: '%s' is not an ordinary file\n",
+				argv[0], argv[1]);
+		return (-1);
+	}
+	fd = open(argv[1], O_RDONLY);
+	if (fd == -1)
+	{
+		perror("open");
+		return (-1);
+	}
+	if (map_header(&header, fd, argv[0]) == -1)
+	{
+		close(fd);
+		return (-1);
+	}
+	if (header.Flag_SIG || parse_symbol_header(&header) == -1)
+	{
+		destroy_header(&header);
+		fprintf(stderr, "%s: %s: no symbols\n", argv[0], argv[1]);
+		return (0);
+	}
+	process_symbols(&header);
+	destroy_header(&header);
+	return (0);
+}
 
-    return (0);
+/**
+ * map_header - Maps open ELF file into virtual memory
+ * @header: Pointer to `elf_hdr` struct
+ * @fd: File descriptor for ELF file
+ * @prog: Program name
+ * Return: `0` on success, `-1` on failure
+ */
+int map_header(elf_hdr *header, int fd, char *prog)
+{
+	struct stat statbuf;
+
+	header->fd = fd;
+	if (fstat(header->fd, &statbuf) == -1)
+	{
+		perror("fstat");
+		return (-1);
+	}
+	header->fsize64 = (uint64_t)statbuf.st_size;
+	header->Ehdr64 = mmap(NULL, header->fsize64, PROT_READ, MAP_PRIVATE,
+		header->fd, 0);
+	if (header->Ehdr64 == MAP_FAILED)
+	{
+		perror("mmap");
+		return (-1);
+	}
+	if (memcmp(header->Ehdr64->e_ident, ELFMAG, SELFMAG))
+	{
+		fprintf(stderr, "%s: Error: Not an ELF file\n", prog);
+		munmap(header->Ehdr64, header->fsize64);
+		return (-1);
+	}
+	header->Flag_SIG = (header->Ehdr64->e_ident[EI_DATA] == ELFDATA2MSB);
+	header->Flag_OP = (header->Ehdr64->e_ident[EI_CLASS] == ELFCLASS64);
+
+	if (header->Flag_OP)
+	{
+		return (header->Ehdr64 == MAP_FAILED ? -1 : 0);
+	}
+	else
+	{
+		header->fsize32 = (uint32_t)statbuf.st_size;
+		header->Ehdr32 = mmap(NULL, header->fsize32, PROT_READ, MAP_PRIVATE,
+			header->fd, 0);
+		if (header->Ehdr32 == MAP_FAILED)
+		{
+			perror("mmap");
+			munmap(header->Ehdr64, header->fsize64);
+			return (-1);
+		}
+		return (0);
+	}
+	return (-1);
+}
+
+/**
+ * parse_symbol_header - Finds symbol-table section header and symbol count
+ * @hdr: Pointer to struct
+ * Return: `0` on success, `-1` on failure
+ */
+int parse_symbol_header(elf_hdr *hdr)
+{
+	uint64_t i;
+	uint32_t j;
+
+	if (hdr->Flag_OP)
+	{
+		hdr->Shdr64 = SECTION_HEADERS64(hdr->Ehdr64);
+		hdr->Sym_sh64 = NULL;
+		for (i = 0; i < SECTION_COUNT64(hdr->Ehdr64); ++i)
+		{
+			if (hdr->Shdr64[i].sh_type == SHT_SYMTAB)
+			{
+				hdr->Sym_sh64 = hdr->Shdr64 + i;
+				break;
+			}
+		}
+		if (!hdr->Sym_sh64)
+			return (-1);
+		hdr->Sym_count64 = SYMBOL_COUNT64(hdr->Sym_sh64);
+		hdr->Sym_tbl_64 = SYMBOL_TABLE64(hdr->Ehdr64, hdr->Sym_sh64);
+		hdr->str_table = STRING_TABLE(hdr->Ehdr64, hdr->Shdr64, hdr->Sym_sh64);
+	}
+	else
+	{
+		hdr->Shdr32 = SECTION_HEADERS32(hdr->Ehdr32);
+		hdr->Sym_sh32 = NULL;
+		for (j = 0; j < SECTION_COUNT32(hdr->Ehdr32); ++j)
+		{
+			if (hdr->Shdr32[j].sh_type == SHT_SYMTAB)
+			{
+				hdr->Sym_sh32 = hdr->Shdr32 + j;
+				break;
+			}
+		}
+		if (!hdr->Sym_sh32)
+			return (-1);
+		hdr->Sym_count32 = SYMBOL_COUNT32(hdr->Sym_sh32);
+		hdr->Sym_tbl_32 = SYMBOL_TABLE32(hdr->Ehdr32, hdr->Sym_sh32);
+		hdr->str_table = STRING_TABLE(hdr->Ehdr32, hdr->Shdr32, hdr->Sym_sh32);
+	}
+	return (0);
+}
+
+/**
+ * destroy_header - Frees memory used by struct
+ * @header: Pointer to struct
+ */
+
+void destroy_header(elf_hdr *header)
+{
+	if (!header)
+		return;
+	if (header->Flag_OP)
+		munmap(header->Ehdr64, header->fsize64);
+	else
+		munmap(header->Ehdr32, header->fsize32);
+	close(header->fd);
+	memset(header, 0, sizeof(elf_hdr));
+}
+
+/**
+ * process_symbols - Sequentially performs `action` on all symbols
+ * @header: Pointer to `elf_hdr` structure
+ */
+
+void process_symbols(elf_hdr *header)
+{
+	uint64_t i;
+	uint32_t j;
+
+	if (header->Flag_OP)
+	{
+		for (i = 0; i < header->Sym_count64; ++i)
+		{
+			print_symbol(header, header->Sym_tbl_64 + i, NULL);
+		}
+	}
+	else
+	{
+		for (j = 0; j < header->Sym_count32; ++j)
+		{
+			print_symbol(header, NULL, header->Sym_tbl_32 + j);
+		}
+	}
 }
