@@ -61,6 +61,8 @@ int main(int argc, char **argv)
 int map_header(elf_hdr *header, int fd, char *prog)
 {
 	struct stat statbuf;
+	void *map;
+
 	header->fd = fd;
 	if (fstat(header->fd, &statbuf) == -1)
 	{
@@ -68,13 +70,13 @@ int map_header(elf_hdr *header, int fd, char *prog)
 		return (-1);
 	}
 	header->fsize64 = (uint64_t)statbuf.st_size;
-	header->Ehdr64 = mmap(NULL, header->fsize64, PROT_READ, MAP_PRIVATE,
-		header->fd, 0);
-	if (header->Ehdr64 == MAP_FAILED)
+	map = mmap(NULL, header->fsize64, PROT_READ, MAP_PRIVATE, header->fd, 0);
+	if (map == MAP_FAILED)
 	{
 		perror("mmap");
 		return (-1);
 	}
+	header->Ehdr64 = (Elf64_Ehdr *)map;
 	if (memcmp(header->Ehdr64->e_ident, ELFMAG, SELFMAG))
 	{
 		fprintf(stderr, "%s: Error: Not an ELF file\n", prog);
@@ -83,23 +85,18 @@ int map_header(elf_hdr *header, int fd, char *prog)
 	}
 	header->Flag_SIG = (header->Ehdr64->e_ident[EI_DATA] == ELFDATA2MSB);
 	header->Flag_OP = (header->Ehdr64->e_ident[EI_CLASS] == ELFCLASS64);
-
-	if (header->Flag_OP)
-		return (header->Ehdr64 == MAP_FAILED ? -1 : 0);
-	else
+	if (!header->Flag_OP)
 	{
 		header->fsize32 = (uint32_t)statbuf.st_size;
-		header->Ehdr32 = mmap(NULL, header->fsize32, PROT_READ, MAP_PRIVATE,
-			header->fd, 0);
+		header->Ehdr32 = (Elf32_Ehdr *)map;
 		if (header->Ehdr32 == MAP_FAILED)
 		{
 			perror("mmap");
 			munmap(header->Ehdr64, header->fsize64);
 			return (-1);
 		}
-		return (0);
 	}
-	return (-1);
+	return (0);
 }
 
 /**
