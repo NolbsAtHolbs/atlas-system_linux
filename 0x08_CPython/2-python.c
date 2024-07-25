@@ -1,13 +1,10 @@
 #define PY_SSIZE_T_CLEAN
 
 #include <Python.h>
-#include <listobject.h>
-#include <object.h>
-#include <bytesobject.h>
 
 void print_python_list(PyObject *p)
 {
-    Py_ssize_t size, i, allocated;
+    Py_ssize_t size, allocated, i;
     PyListObject *list;
 
     if (!PyList_Check(p))
@@ -17,7 +14,7 @@ void print_python_list(PyObject *p)
     }
 
     list = (PyListObject *)p;
-    size = PyList_Size(p);
+    size = ((PyVarObject *)p)->ob_size;
     allocated = list->allocated;
 
     printf("[*] Python list info\n");
@@ -45,8 +42,8 @@ void print_python_bytes(PyObject *p)
         return;
     }
 
-    size = PyBytes_Size(p);
-    string = PyBytes_AsString(p);
+    size = ((PyVarObject *)p)->ob_size;
+    string = ((PyBytesObject *)p)->ob_sval;
 
     printf("  size: %zd\n", size);
     printf("  trying string: %s\n", string);
