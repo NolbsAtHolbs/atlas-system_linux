@@ -1,5 +1,3 @@
-#define PY_SSIZE_T_CLEAN
-
 #include <Python.h>
 
 void print_python_bytes(PyObject *p);
