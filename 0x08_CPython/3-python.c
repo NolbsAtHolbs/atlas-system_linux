@@ -8,7 +8,7 @@ void print_python_float(PyObject *p);
 
 void print_python_list(PyObject *p)
 {
-    Py_ssize_t size, allocated, i;
+    Py_ssize_t size, i, allocated;
     PyListObject *list;
 
     if (!PyList_Check(p))
@@ -71,7 +71,7 @@ void print_python_bytes(PyObject *p)
 
 void print_python_float(PyObject *p)
 {
-    double value;
+    double fvalue;
 
     printf("[.] float object info\n");
 
@@ -81,7 +81,7 @@ void print_python_float(PyObject *p)
         return;
     }
 
-    value = ((PyFloatObject *)p)->ob_fval;
+    fvalue = ((PyFloatObject *)p)->ob_fval;
 
-    printf("  value: %.16g\n", value);
+    printf("  value: %.1f\n", fvalue);
 }
