@@ -25,27 +25,23 @@ void print_python_int(PyObject *p)
 
     for (i = 0; i < size; i++)
     {
-        if (i >= (Py_ssize_t)(sizeof(unsigned long int) * 8 / PyLong_SHIFT))
+        if (i > 0)
         {
-            printf("C unsigned long int overflow\n");
-            return;
+            if ((unsigned long int)py_long->ob_digit[i] > (ULONG_MAX >> (i * PyLong_SHIFT)))
+            {
+                printf("C unsigned long int overflow\n");
+                return;
+            }
         }
         result += (unsigned long int)(py_long->ob_digit[i]) << (i * PyLong_SHIFT);
     }
 
-    if (result > ULONG_MAX)
+    if (factor == -1)
     {
-        printf("C unsigned long int overflow\n");
+        printf("-%lu\n", result);
     }
     else
     {
-        if (factor == -1)
-        {
-            printf("-%lu\n", result);
-        }
-        else
-        {
-            printf("%lu\n", result);
-        }
+        printf("%lu\n", result);
     }
 }
