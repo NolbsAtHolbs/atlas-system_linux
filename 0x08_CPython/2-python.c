@@ -2,9 +2,11 @@
 
 #include <Python.h>
 
+void print_python_bytes(PyObject *p);
+
 void print_python_list(PyObject *p)
 {
-    Py_ssize_t size, allocated, i;
+    Py_ssize_t size, i, allocated;
     PyListObject *list;
 
     if (!PyList_Check(p))
@@ -26,6 +28,10 @@ void print_python_list(PyObject *p)
         PyObject *item = list->ob_item[i];
         const char *type = item->ob_type->tp_name;
         printf("Element %zd: %s\n", i, type);
+        if (strcmp(type, "bytes") == 0)
+        {
+            print_python_bytes(item);
+        }
     }
 }
 
