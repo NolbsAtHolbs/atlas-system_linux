@@ -70,7 +70,7 @@ void print_python_bytes(PyObject *p)
 
 void print_python_float(PyObject *p)
 {
-    double fvalue;
+    double value;
 
     printf("[.] float object info\n");
 
@@ -80,7 +80,7 @@ void print_python_float(PyObject *p)
         return;
     }
 
-    fvalue = ((PyFloatObject *)p)->ob_fval;
+    value = ((PyFloatObject *)p)->ob_fval;
 
-    printf("  value: %.15g\n", fvalue);
+    printf("  value: %.16g\n", value);
 }
