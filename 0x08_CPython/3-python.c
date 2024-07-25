@@ -7,7 +7,7 @@ void print_python_float(PyObject *p);
 
 void print_python_list(PyObject *p)
 {
-    Py_ssize_t size, i, allocated;
+    Py_ssize_t size, allocated, i;
     PyListObject *list;
 
     if (!PyList_Check(p))
@@ -82,5 +82,5 @@ void print_python_float(PyObject *p)
 
     fvalue = ((PyFloatObject *)p)->ob_fval;
 
-    printf("  value: %g\n", fvalue);
+    printf("  value: %.15g\n", fvalue);
 }
