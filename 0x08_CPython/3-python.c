@@ -1,9 +1,11 @@
+#define PY_SSIZE_T_CLEAN
 #include <Python.h>
 #include <stdio.h>
 #include <string.h>
+#include <floatobject.h>
 
-void print_python_list(PyObject *p);
 void print_python_bytes(PyObject *p);
+void print_python_list(PyObject *p);
 void print_python_float(PyObject *p);
 
 void print_python_list(PyObject *p)
@@ -61,7 +63,7 @@ void print_python_bytes(PyObject *p)
     printf("  trying string: %s\n", string);
     printf("  first %zd bytes:", size < 10 ? size + 1 : 10);
 
-    for (i = 0; i < size + 1 && i < 10; i++)
+    for (i = 0; i < (size < 10 ? size + 1 : 10); i++)
     {
         printf(" %02x", (unsigned char)string[i]);
     }
@@ -83,5 +85,5 @@ void print_python_float(PyObject *p)
 
     value = ((PyFloatObject *)p)->ob_fval;
 
-    printf("  value: %.16g\n", value);
+    printf("  value: %.1f\n", value);
 }
