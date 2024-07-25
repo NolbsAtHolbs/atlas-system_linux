@@ -83,5 +83,5 @@ void print_python_float(PyObject *p)
 
     value = ((PyFloatObject *)p)->ob_fval;
 
-    printf("  value: %.16g\n", value);
+    printf("  value: %.1f\n", value);
 }
