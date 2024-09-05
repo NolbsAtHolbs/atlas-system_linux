@@ -1,61 +1,90 @@
 #include "syscalls.h"
+
+void print_params(size_t i, struct user_regs_struct *regs);
+
 /**
- * main - executes and traces a given command, printing syscall names, their parameters, & return values.
+ * main - executes and traces a given command, and prints a syscall name, params, and return value
  * @argc: number of args passed to the program
  * @argv: the arguments to be assessed
  * @envvar: the environmental variable to check within
  * Return: success on success, else failure
  */
+
 int main(int argc, char *argv[], char *envvar[])
 {
 	pid_t child;
 	int status = 0;
+	int entry_exit_toggle = 0;
+	size_t i = 0;
 	struct user_regs_struct regs;
 
 	if (argc < 2)
 	{
 		fprintf(stderr, "Unsupported number of arguments\n");
-		return (EXIT_FAILURE);
+		return (-1);
 	}
-
 	child = fork();
 	if (child == 0)
 	{
-		ptrace(PTRACE_TRACEME, 0, NULL, NULL); /* Child process: execute command */
+		ptrace(PTRACE_TRACEME, child, NULL, NULL);
 		execve(argv[1], &argv[1], envvar);
 	}
 	else
 	{
 		while (1)
 		{
-			ptrace(PTRACE_SYSCALL, child, NULL, NULL);
+			ptrace(PT_SYSCALL, child, NULL, NULL);
 			wait(&status);
+			ptrace(PTRACE_GETREGS, child, NULL, &regs);
 			if (WIFEXITED(status))
 			{
-				fprintf(stderr, " = ?\n");
+				fprintf(stderr, ") = ?\n");
 				break;
 			}
-
-			ptrace(PTRACE_GETREGS, child, NULL, &regs); /* Get registers, which contain syscall number, parameters, return value */
-
-			unsigned long syscall_num = regs.orig_rax; /* Retrieve syscall name */
-			const char *syscall_name = "unknown_syscall";
-			if (syscall_num < SYS_CALL_COUNT && SYSNAME != NULL)
+			if (entry_exit_toggle == 0 || entry_exit_toggle % 2 != 0)
 			{
-				syscall_name = SYSNAME;
+				fprintf(stderr, "%s(", SYSNAME);
+				for (i = 0; i < SYSPARAM; i++)
+				{
+					if (SYSTYPE == VOID)
+						continue;
+					if (SYSTYPE == VARARGS)
+						fprintf(stderr, ", ...");
+					else
+						print_params(i, &regs);
+				}
 			}
-
-			fprintf(stderr, "%s(", syscall_name); /* Print syscall name and its parameters in hexadecimal */
-			fprintf(stderr, "%#lx, %#lx, %#lx", 
-				(size_t)(regs.rdi == 0 ? 0 : regs.rdi),
-				(size_t)(regs.rsi == 0 ? 0 : regs.rsi),
-				(size_t)(regs.rdx == 0 ? 0 : regs.rdx));
-
-			if (regs.rax == 0)
-				fprintf(stderr, ") = 0\n");
-			else
+			if (entry_exit_toggle % 2 == 0)
 				fprintf(stderr, ") = %#lx\n", (size_t)regs.rax);
+			entry_exit_toggle++;
 		}
 	}
-	return (EXIT_SUCCESS);
+	return (0);
+}
+/**
+ * print_params - prints system call parameters based on index
+ * @i: index of the parameter to print
+ * @regs: pointer to user_regs_struct containing syscall parameters
+ */
+void print_params(size_t i, struct user_regs_struct *regs)
+{
+	/* Store all the register values in an array */
+	size_t params[] =
+	{
+		(size_t)regs->rdi,
+		(size_t)regs->rsi,
+		(size_t)regs->rdx,
+		(size_t)regs->r10,
+		(size_t)regs->r8,
+		(size_t)regs->r9
+	};
+
+	if (i == 0)  /* First parameter without a preceding comma */
+	{
+		fprintf(stderr, "%#lx", params[i]);
+	}
+	else if (i < 6)  /* Subsequent parameters with a preceding comma */
+	{
+		fprintf(stderr, ", %#lx", params[i]);
+	}
 }
