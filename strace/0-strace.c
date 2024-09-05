@@ -6,52 +6,64 @@
  * @envvar: the environmental variable to check within
  * Return: 0 on success, else 1
  */
-int main(int argc, char *argv[], char *envvar[])
+int main(int argc, const char *argv[], char *const envp[])
 {
-	pid_t pid;
-	int status = 0;
-	int alt = 0;
-	struct user_regs_struct regs;
+    pid_t child;
+    int status;
+    int print_on_entry = 1;  /* Toggle to print only on syscall entry */
+    struct user_regs_struct regs;
 
-	if (argc < 2)
-	{
-		fprintf(stderr, "Usage: %s command [args...]\n", argv[0]);
-		return (1);
-	}
+    if (argc < 2)
+    {
+        fprintf(stderr, "Unsupported number of Arguments\n");
+        return (EXIT_FAILURE);
+    }
 
-	pid = fork();
+    child = fork();
+    if (child == -1)
+    {
+        perror("fork failed");
+        return (EXIT_FAILURE);
+    }
 
-	if (pid == -1)
-	{
-		perror("fork");
-		exit(1);
-	}
-	else if (pid == 0)
-	{
-		/* Child process: prepare for tracing and execute the command */
-		ptrace(PTRACE_TRACEME, 0, NULL, NULL);
-		kill(getpid(), SIGSTOP);  /* Stop to be traced by the parent */
-		execve(argv[1], &argv[1], envvar);  /* Execute the command at second address */
-		perror("execve");  /* If execve fails */
-		exit(1);
-	}
-	else
-	{
-		/* Parent process: trace system calls */
-		while (1)
-		{
-			wait(&status);  /* Wait for child to stop or exit */
+    if (child == 0)  /* Child process */
+    {
+        if (ptrace(PTRACE_TRACEME, 0, NULL, NULL) == -1)
+        {
+            perror("ptrace(PTRACE_TRACEME) failed");
+            exit(EXIT_FAILURE);
+        }
+        execve(argv[1], (char * const *)(argv + 1), envp);
+        perror("execve failed");  /* This will only run if execve fails */
+        exit(EXIT_FAILURE);
+    }
+    else  /* Parent process */
+    {
+        while (1)
+        {
+            if (ptrace(PT_SYSCALL, child, NULL, NULL) == -1)
+            {
+                perror("ptrace(PT_SYSCALL) failed");
+                exit(EXIT_FAILURE);
+            }
 
-			if (WIFEXITED(status))  /* If the child exits */
-				break;
+            wait(&status);  /* Wait for child process to change state */
 
-			if (!ptrace(PTRACE_GETREGS, pid, NULL, &regs) && alt)
-				printf("%llu\n", (unsigned long long)regs.orig_rax);  /* Print syscall number */
+            if (WIFEXITED(status))  /* If child has exited, break loop */
+                break;
 
-			ptrace(PTRACE_SYSCALL, pid, NULL, NULL);  /* Continue tracing */
-			alt = !alt;  /* Alternate between syscall entry and exit */
-		}
-	}
+            if (ptrace(PTRACE_GETREGS, child, NULL, &regs) == -1)
+            {
+                perror("ptrace(PTRACE_GETREGS) failed");
+                exit(EXIT_FAILURE);
+            }
 
-	return (0);
+            if (print_on_entry)
+                fprintf(stderr, "%lu\n", (size_t)regs.orig_rax);  /* Print syscall number */
+
+            print_on_entry = !print_on_entry;  /* Toggle between entry and exit */
+        }
+    }
+
+    return (EXIT_SUCCESS);
 }
