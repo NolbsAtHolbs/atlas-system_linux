@@ -14,7 +14,7 @@ int main(int argc, char *argv[], char *envvar[])
 
 	if (argc < 2)
 	{
-		fprintf(stderr, "Unsupported number of Arguments\n");
+		fprintf(stderr, "Unsupported number of arguments\n");
 		return (EXIT_FAILURE);
 	}
 	child = fork();

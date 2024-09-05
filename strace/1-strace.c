@@ -9,7 +9,8 @@
 int main(int argc, char *argv[], char *envvar[])
 {
 	pid_t child;
-	int status;
+	int status = 0;
+	int entry_exit_toggle = 0;
 	struct user_regs_struct regs;
 
 	if (argc < 2)
@@ -37,14 +38,24 @@ int main(int argc, char *argv[], char *envvar[])
 			unsigned long syscall_num = regs.orig_rax;
 
 			if (syscall_num < sizeof(syscalls_64_g) / sizeof(syscall_t) &&
-				syscalls_64_g[syscall_num].name) /* Print syscall name if valid */
+				syscalls_64_g[syscall_num].name) /* Check for valid syscall number */
 			{
-				printf("%s\n", syscalls_64_g[syscall_num].name);
+				if (entry_exit_toggle == 0 || entry_exit_toggle % 2 != 0) /* entry or exit */
+				{
+					if (syscall_num != 1) /* Syscall not 'write' */
+						fprintf(stderr, "%s\n", SYSNAME);
+					else
+						fprintf(stderr, "%s", SYSNAME);
+				}
+				if (entry_exit_toggle % 2 == 0 && syscall_num == 1)
+					fprintf(stderr, "\n");
 			}
 			else
 			{
-				printf("unknown_syscall\n");
+				fprintf(stderr, "unknown_syscall\n");
 			}
+
+			entry_exit_toggle++;
 		}
 	}
 	return (EXIT_SUCCESS);

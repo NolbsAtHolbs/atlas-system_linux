@@ -1,7 +1,7 @@
 #ifndef _SYSCALLS_H_
 #define _SYSCALLS_H_
 
-# include <stddef.h>
+#include <stddef.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/ptrace.h>
