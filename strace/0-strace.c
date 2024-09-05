@@ -6,64 +6,34 @@
  * @envvar: the environmental variable to check within
  * Return: 0 on success, else 1
  */
-int main(int argc, const char *argv[], char *const envp[])
+int main(int argc, char *argv[], char *envvar[])
 {
-    pid_t child;
-    int status;
-    int print_on_entry = 1;  /* Toggle to print only on syscall entry */
-    struct user_regs_struct regs;
+	pid_t child;
+	int status, print_check = 0;
+	struct user_regs_struct regs;
 
-    if (argc < 2)
-    {
-        fprintf(stderr, "Unsupported number of Arguments\n");
-        return (EXIT_FAILURE);
-    }
+	if (argc < 2)
+		return (-1);
 
-    child = fork();
-    if (child == -1)
-    {
-        perror("fork failed");
-        return (EXIT_FAILURE);
-    }
-
-    if (child == 0)  /* Child process */
-    {
-        if (ptrace(PTRACE_TRACEME, 0, NULL, NULL) == -1)
-        {
-            perror("ptrace(PTRACE_TRACEME) failed");
-            exit(EXIT_FAILURE);
-        }
-        execve(argv[1], (char * const *)(argv + 1), envp);
-        perror("execve failed");  /* This will only run if execve fails */
-        exit(EXIT_FAILURE);
-    }
-    else  /* Parent process */
-    {
-        while (1)
-        {
-            if (ptrace(PT_SYSCALL, child, NULL, NULL) == -1)
-            {
-                perror("ptrace(PT_SYSCALL) failed");
-                exit(EXIT_FAILURE);
-            }
-
-            wait(&status);  /* Wait for child process to change state */
-
-            if (WIFEXITED(status))  /* If child has exited, break loop */
-                break;
-
-            if (ptrace(PTRACE_GETREGS, child, NULL, &regs) == -1)
-            {
-                perror("ptrace(PTRACE_GETREGS) failed");
-                exit(EXIT_FAILURE);
-            }
-
-            if (print_on_entry)
-                fprintf(stderr, "%lu\n", (size_t)regs.orig_rax);  /* Print syscall number */
-
-            print_on_entry = !print_on_entry;  /* Toggle between entry and exit */
-        }
-    }
-
-    return (EXIT_SUCCESS);
+	child = fork();
+	if (child == 0)
+	{
+		ptrace(PTRACE_TRACEME, 0, NULL, NULL);
+		execve(argv[1], (char * const *)(argv + 1), envvar);
+	}
+	else
+	{
+		while (1)
+		{
+			ptrace(PT_SYSCALL, child, NULL, NULL);
+			wait(&status);
+			if (WIFEXITED(status))
+				break;
+			ptrace(PTRACE_GETREGS, child, NULL, &regs);
+			if (print_check % 2 == 0)
+				fprintf(stderr, "%lu\n", (size_t)regs.orig_rax);
+			print_check++;
+		}
+	}
+	return (0);
 }
