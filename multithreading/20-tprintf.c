@@ -1,19 +1,13 @@
 #include "multithreading.h"
 
-/* Global mutex for thread synchronization */
 pthread_mutex_t mutex;
 
-/**
- * init_mutex - Constructor function to initialize the mutex
- */
+
 __attribute__((constructor)) void init_mutex(void)
 {
 	pthread_mutex_init(&mutex, NULL);
 }
 
-/**
- * destroy_mutex - Destructor function to destroy the mutex
- */
 __attribute__((destructor)) void destroy_mutex(void)
 {
 	pthread_mutex_destroy(&mutex);
