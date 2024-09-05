@@ -2,7 +2,6 @@
 
 pthread_mutex_t mutex;
 
-
 __attribute__((constructor)) void init_mutex(void)
 {
 	pthread_mutex_init(&mutex, NULL);
