@@ -4,7 +4,7 @@
  * @argc: number of args passed to the program
  * @argv: the arguments to be assessed
  * @envvar: the environmental variable to check within
- * Return: 0 on success, else -1
+ * Return: success on success, else failure
  */
 int main(int argc, char *argv[], char *envvar[])
 {
