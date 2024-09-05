@@ -14,7 +14,6 @@ list_t *prime_factors(char const *s)
 	if (!prime_list)
 		return (NULL); /* Handle memory allocation failure */
 
-	/* Convert the input string to an unsigned long */
 	num = strtoul(s, &endptr, 10);
 	if (*endptr != '\0') /* Check if the string is a valid number */
 	{
@@ -24,7 +23,6 @@ list_t *prime_factors(char const *s)
 
 	list_init(prime_list);
 
-	/* Factorize by dividing the number by primes starting from 2 */
 	while (prime * prime <= num)
 	{
 		while (num % prime == 0)
@@ -44,7 +42,6 @@ list_t *prime_factors(char const *s)
 		prime += 1 + (prime != 2); /* Move to the next prime (skip even numbers) */
 	}
 
-	/* If there's a prime factor greater than sqrt(num), add it */
 	if (num >= 2)
 	{
 		temp = malloc(sizeof(unsigned long));
