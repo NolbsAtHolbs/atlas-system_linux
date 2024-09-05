@@ -1,11 +1,11 @@
 #include "multithreading.h"
 
 /**
- * create_task - Creates a new task with a specified entry function and parameter.
+ * create_task - Creates a new task with a specified entry function and param
  * @entry: Pointer to the function that serves as the task entry point.
  * @param: Pointer to the parameter to be passed to the task entry function.
  *
- * Return: Pointer to the newly created task structure, or NULL if memory allocation fails.
+ * Return: Pointer to the newly created task structure, or NULL if memaloc fail
  */
 task_t *create_task(task_entry_t entry, void *param)
 {
@@ -29,7 +29,7 @@ task_t *create_task(task_entry_t entry, void *param)
  * destroy_task - Frees resources associated with a task.
  * @task: Pointer to the task to destroy.
  *
- * This function deallocates the memory of the specified task, including its result
+ * This function deallocates the memory of the specified task, including result
  * and mutex, if necessary.
  */
 void destroy_task(task_t *task)
@@ -46,8 +46,8 @@ void destroy_task(task_t *task)
  * exec_tasks - Executes a list of tasks in a thread-safe manner.
  * @tasks: Pointer to the list of tasks to execute.
  *
- * This function ensures that each task is processed by multiple threads in a thread-safe
- * manner. Tasks are executed only once, and their status is updated accordingly.
+ * function ensures that each task is processed by multiple threads in thrdsafe
+ * manner. Tasks are executed only once, and their status updated accordingly
  * Uses a mutex to print the status of each task without race conditions.
  *
  * Return: Always returns NULL.
@@ -70,15 +70,14 @@ void *exec_tasks(const list_t *tasks)
 		if (task->status == PENDING)
 		{
 			task->status = STARTED;
-			tprintf("[%02d] Started\n", task->id);  /* Print task ID with zero-padding */
+			tprintf("[%02d] Started\n", task->id);
 			pthread_mutex_unlock(&print_mutex);
 
-			/* Execute the task */
 			task->result = task->entry(task->param);
 
 			pthread_mutex_lock(&print_mutex);
 			task->status = SUCCESS;
-			tprintf("[%02d] Success\n", task->id);  /* Print task ID with zero-padding */
+			tprintf("[%02d] Success\n", task->id);
 		}
 		else
 		{
@@ -87,7 +86,6 @@ void *exec_tasks(const list_t *tasks)
 
 		pthread_mutex_unlock(&print_mutex);
 
-		/* Move to the next node */
 		current_node = current_node->next;
 	}
 
