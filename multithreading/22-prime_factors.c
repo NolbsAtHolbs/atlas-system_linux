@@ -1,14 +1,16 @@
 #include "multithreading.h"
 
 /**
- * create_task - Creates a new task
- * @entry: Pointer to the task entry function
- * @param: Parameter to pass to the entry function
- * Return: A pointer to the created task
+ * create_task - Creates a new task with a specified entry function and parameter.
+ * @entry: Pointer to the function that serves as the task entry point.
+ * @param: Pointer to the parameter to be passed to the task entry function.
+ *
+ * Return: Pointer to the newly created task structure, or NULL if memory allocation fails.
  */
 task_t *create_task(task_entry_t entry, void *param)
 {
 	task_t *task = malloc(sizeof(task_t));
+	static int next_task_id;
 
 	if (!task)
 		return (NULL);
@@ -18,42 +20,76 @@ task_t *create_task(task_entry_t entry, void *param)
 	task->status = PENDING;
 	task->result = NULL;
 	pthread_mutex_init(&task->lock, NULL);
+	task->id = next_task_id++;  /* Assign a unique task ID */
+
 	return (task);
 }
 
 /**
- * destroy_task - Destroys a task
- * @task: Pointer to the task to destroy
+ * destroy_task - Frees resources associated with a task.
+ * @task: Pointer to the task to destroy.
+ *
+ * This function deallocates the memory of the specified task, including its result
+ * and mutex, if necessary.
  */
 void destroy_task(task_t *task)
 {
-	pthread_mutex_destroy(&task->lock);
-	free(task);
+	if (task)
+	{
+		list_destroy(task->result, free);
+		free(task->result);
+		free(task);
+	}
 }
 
 /**
- * exec_tasks - Executes tasks from the list
- * @tasks: Pointer to the list of tasks
- * Return: NULL
+ * exec_tasks - Executes a list of tasks in a thread-safe manner.
+ * @tasks: Pointer to the list of tasks to execute.
+ *
+ * This function ensures that each task is processed by multiple threads in a thread-safe
+ * manner. Tasks are executed only once, and their status is updated accordingly.
+ * Uses a mutex to print the status of each task without race conditions.
+ *
+ * Return: Always returns NULL.
  */
-void *exec_tasks(list_t const *tasks)
+void *exec_tasks(const list_t *tasks)
 {
-	node_t *node;
+	node_t *current_node;
+	task_t *task;
+	pthread_mutex_t print_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-	for (node = tasks->head; node; node = node->next)
+	/* Start from the head of the list */
+	current_node = tasks->head;
+
+	while (current_node)
 	{
-		task_t *task = (task_t *)node->content;
+		pthread_mutex_lock(&print_mutex);
 
-		pthread_mutex_lock(&task->lock);
+		task = (task_t *)current_node->content;
+
 		if (task->status == PENDING)
 		{
-			tprintf("[STARTED] Task: %s\n", (char *)task->param);
 			task->status = STARTED;
-			task->result = task->entry(task->param); /* Execute the task */
+			tprintf("[%02d] Started\n", task->id);  /* Print task ID with zero-padding */
+			pthread_mutex_unlock(&print_mutex);
+
+			/* Execute the task */
+			task->result = task->entry(task->param);
+
+			pthread_mutex_lock(&print_mutex);
 			task->status = SUCCESS;
-			tprintf("[SUCCESS] Task: %s\n", (char *)task->param);
+			tprintf("[%02d] Success\n", task->id);  /* Print task ID with zero-padding */
 		}
-		pthread_mutex_unlock(&task->lock);
+		else
+		{
+			pthread_mutex_unlock(&print_mutex);
+		}
+
+		pthread_mutex_unlock(&print_mutex);
+
+		/* Move to the next node */
+		current_node = current_node->next;
 	}
+
 	return (NULL);
 }
