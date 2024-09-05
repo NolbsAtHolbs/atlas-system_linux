@@ -4,7 +4,7 @@
  * @argc: number of args passed to the program
  * @argv: the arguments to be assessed
  * @envvar: the environmental variable to check within
- * Return: 0 on success, else 1
+ * Return: 0 on success, else -1
  */
 int main(int argc, char *argv[], char *envvar[])
 {
@@ -13,13 +13,15 @@ int main(int argc, char *argv[], char *envvar[])
 	struct user_regs_struct regs;
 
 	if (argc < 2)
-		return (-1);
-
+	{
+		fprintf(stderr, "Unsupported number of Arguments\n");
+		return (EXIT_FAILURE);
+	}
 	child = fork();
 	if (child == 0)
 	{
 		ptrace(PTRACE_TRACEME, 0, NULL, NULL);
-		execve(argv[1], (char * const *)(argv + 1), envvar);
+		execve(argv[1], &argv[1], envvar);
 	}
 	else
 	{
@@ -30,10 +32,10 @@ int main(int argc, char *argv[], char *envvar[])
 			if (WIFEXITED(status))
 				break;
 			ptrace(PTRACE_GETREGS, child, NULL, &regs);
-			if (print_check % 2 == 0)
-				fprintf(stderr, "%lu\n", (size_t)regs.orig_rax);
+			if (print_check == 0 || print_check % 2 != 0)
+				fprintf(stderr, "%llu\n", (unsigned long long)regs.orig_rax);
 			print_check++;
 		}
 	}
-	return (0);
+	return (EXIT_SUCCESS);
 }
