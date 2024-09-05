@@ -1,6 +1,6 @@
 #include "multithreading.h"
 
-pthread_mutex_t mutex;
+static pthread_mutex_t mutex;
 
 __attribute__((constructor)) void init_mutex(void)
 {
