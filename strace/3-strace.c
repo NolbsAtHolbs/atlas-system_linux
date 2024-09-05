@@ -1,8 +1,6 @@
 #include "syscalls.h"
-
 /**
- * main - executes and traces a given command, printing syscall names,
- *        their parameters, & return values.
+ * main - executes and traces a given command, printing syscall names, their parameters, & return values.
  * @argc: number of args passed to the program
  * @argv: the arguments to be assessed
  * @envvar: the environmental variable to check within

@@ -15,6 +15,7 @@
 #define SYSNAME syscalls_64_g[regs.orig_rax].name
 #define SYSPARAM syscalls_64_g[regs.orig_rax].nb_params
 #define SYSTYPE syscalls_64_g[regs.orig_rax].params[i]
+#define SYS_CALL_COUNT (sizeof(syscalls_64_g) / sizeof(syscalls_64_g[0]))
 
 /* Normally, MAX_PARAMS is always 6 */
 #define MAX_PARAMS	6
