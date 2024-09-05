@@ -46,11 +46,15 @@ int main(int argc, char *argv[], char *envvar[])
 			}
 
 			fprintf(stderr, "%s(", syscall_name); /* Print syscall name and its parameters in hexadecimal */
-			fprintf(stderr, "0x%lx, 0x%lx, 0x%lx, 0x%lx, 0x%lx, 0x%lx", 
-				(size_t)regs.rdi, (size_t)regs.rsi, (size_t)regs.rdx,
-				(size_t)regs.r10, (size_t)regs.r8, (size_t)regs.r9);
+			fprintf(stderr, "%#lx, %#lx, %#lx", 
+				(size_t)(regs.rdi == 0 ? 0 : regs.rdi),
+				(size_t)(regs.rsi == 0 ? 0 : regs.rsi),
+				(size_t)(regs.rdx == 0 ? 0 : regs.rdx));
 
-			fprintf(stderr, ") = %#lx\n", (size_t)regs.rax); /* Print return value */
+			if (regs.rax == 0)
+				fprintf(stderr, ") = 0\n");
+			else
+				fprintf(stderr, ") = %#lx\n", (size_t)regs.rax);
 		}
 	}
 	return (EXIT_SUCCESS);
