@@ -11,107 +11,55 @@ void parse_headers(char *query);
 int main(void)
 {
 	int server_fd, client_fd;
-	ssize_t bytes_read;
-	char buffer[4096];
-	struct sockaddr_in server_addr, client_addr;
-	socklen_t addrlen = sizeof(client_addr);
+	size_t received_bytes = 0;
+	char request_buffer[4096], response[] = HTTP200;
+	struct sockaddr_in server_address;
+	socklen_t address_length = sizeof(server_address);
 
 	server_fd = socket(AF_INET, SOCK_STREAM, 0);
 	if (server_fd == -1)
-	{
-		perror("socket failed");
-		exit(EXIT_FAILURE);
-	}
-	int opt = 1;
-	if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
-	{
-		perror("setsockopt failed");
-		close(server_fd);
-		exit(EXIT_FAILURE);
-	}
-	memset(&server_addr, 0, sizeof(server_addr));
-	server_addr.sin_family = AF_INET;
-	server_addr.sin_port = htons(8080);
-	server_addr.sin_addr.s_addr = INADDR_ANY;
+		perror("socket failed"), exit(EXIT_FAILURE);
+	server_address.sin_family = AF_INET;
+	server_address.sin_port = htons(8080);
+	server_address.sin_addr.s_addr = INADDR_ANY;
 
-	if (bind(server_fd, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0)
-	{
-		perror("bind failed");
-		close(server_fd);
-		exit(EXIT_FAILURE);
-	}
+	if (bind(server_fd, (struct sockaddr *)&server_address, sizeof(server_address)) < 0)
+		perror("bind failed"), exit(EXIT_FAILURE);
 	printf("Server listening on port 8080\n");
 	if (listen(server_fd, 5) < 0)
-	{
-		perror("listen failed");
-		close(server_fd);
-		exit(EXIT_FAILURE);
-	}
+		perror("listen failed"), exit(EXIT_FAILURE);
 	while (1)
 	{
-		client_fd = accept(server_fd, (struct sockaddr *)&client_addr, &addrlen);
+		client_fd = accept(server_fd, (struct sockaddr *)&server_address, &address_length);
 		if (client_fd < 0)
+			perror("accept failed"), exit(EXIT_FAILURE);
+		printf("Client connected: %s\n", inet_ntoa(server_address.sin_addr));
+		received_bytes = recv(client_fd, request_buffer, sizeof(request_buffer) - 1, 0);
+		if (received_bytes > 0)
 		{
-			perror("accept failed");
-			continue;
+			request_buffer[received_bytes] = '\0';
+			printf("Raw request: \"%s\"\n", request_buffer), fflush(stdout);
+			parse_headers(request_buffer);
 		}
-		printf("Client connected: %s\n", inet_ntoa(client_addr.sin_addr));
-		bytes_read = recv(client_fd, buffer, sizeof(buffer) - 1, 0);
-		if (bytes_read > 0)
-		{
-			buffer[bytes_read] = '\0'; /* null-terminate the buffer */
-			printf("Raw request: \"%s\"\n", buffer);
-			parse_headers(buffer);
-		}
-		else if (bytes_read == 0)
-		{
-			printf("Client disconnected\n");
-		}
-		else
-		{
-			perror("recv failed");
-		}
-		if (send(client_fd, HTTP200, strlen(HTTP200), 0) < 0)
-		{
-			perror("send failed");
-		}
+		send(client_fd, response, strlen(response), 0);
 		close(client_fd);
 	}
-	close(server_fd);
 	return (EXIT_SUCCESS);
 }
 
-/**
- * parse_headers - Parses and prints HTTP headers from the buffer
- * @buffer: The buffer containing the HTTP request
- */
-void parse_headers(char *buffer)
+void parse_headers(char *request)
 {
-	char *line, *headers, *key, *value;
+	char *header_line, *header_array[16] = {0}, header_key[50], header_val[50];
+	int i, header_count = 0;
 
-	headers = strstr(buffer, "\r\n");
-	if (!headers)
-		return;
-
-	headers += 2; /* move past the first CRLF */
-
-	/* iterate over each header line */
-	line = strtok(headers, "\r\n");
-	while (line && line[0] != '\0')
+	while ((header_line = strsep(&request, "\r\n")) != NULL)
 	{
-		key = line;
-		value = strchr(line, ':');
-		if (value)
-		{
-			*value = '\0'; /* null-terminate the key */
-			value++;       /* move past ':' */
-
-			/* skip leading whitespace in value */
-			while (*value == ' ' || *value == '\t')
-				value++;
-
-			printf("Header: \"%s\" -> \"%s\"\n", key, value);
-		}
-		line = strtok(NULL, "\r\n");
+		if (header_count < 16)
+			header_array[header_count++] = header_line;
+	}
+	for (i = 1; i < header_count; i++)
+	{
+		if (sscanf(header_array[i], "%[^:]: %[^\r\n]", header_key, header_val) == 2)
+			printf("Header: \"%s\" -> \"%s\"\n", header_key, header_val), fflush(stdout);
 	}
 }
