@@ -12,7 +12,7 @@ int main(void)
 {
 	int sock_fd, client_fd;
 	size_t bytes = 0;
-	char buffer[4096], sent[32] = parse_query;
+	char buffer[4096], sent[32] = HTTP200;
 	struct sockaddr_in s_address;
 	socklen_t addrlen = sizeof(s_address);
 
