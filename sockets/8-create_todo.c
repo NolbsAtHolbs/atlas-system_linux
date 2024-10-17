@@ -3,8 +3,8 @@
 todo_t *list = NULL;
 
 /**
- * main - entry to the function
- * Return: 0 on success
+ * main - REST API handling POST for /todos
+ * Return: 0 on success, -1 on failure
 */
 int main(void)
 {
@@ -99,8 +99,8 @@ void head_parser(char *query, int fd)
 }
 
 /**
- * task_parser - parse an http query
- * @query: query string to parse
+ * task_parser - parses an http query
+ * @query: supplied query string to parse
  * @fd: file descriptor for socket connection
 */
 void task_parser(char *query, int fd)
@@ -133,7 +133,7 @@ void task_parser(char *query, int fd)
 }
 
 /**
- * add_todo - Function to add to the todo list
+ * add_todo - function to add to todo list
  * @desc: description of task
  * @title: title of task
  * @fd: file descriptor for socket connection
@@ -143,7 +143,7 @@ void add_todo(char *desc, char *title, int fd)
 	static size_t id;
 	int len = 0;
 	char buffer[1024];
-	todo_t *new_todo = NULL, *tmp;
+	todo_t *new_todo = NULL, *temp;
 
 	printf("Entering add_todo\n");
 	new_todo = calloc(1, sizeof(todo_t));
@@ -158,12 +158,12 @@ void add_todo(char *desc, char *title, int fd)
 		list = new_todo;
 	else
 	{
-		tmp = list;
-		for (; tmp; tmp = tmp->next)
+		temp = list;
+		for (; temp; temp = temp->next)
 		{
-			if (tmp->next == NULL)
+			if (temp->next == NULL)
 			{
-				tmp->next = new_todo;
+				temp->next = new_todo;
 				break;
 			}
 		}
