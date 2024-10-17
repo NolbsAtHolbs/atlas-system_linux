@@ -8,7 +8,7 @@
  */
 int main(void)
 {
-	int sock_fd, cli_fd;
+	int sock_fd, client_fd;
 	size_t bytes = 0;
 	char buffer[4096], meth[50], path[50], ver[50], sent[32] = HTTP200;
 	struct sockaddr_in s_address;
@@ -26,11 +26,11 @@ int main(void)
 		perror("listen failed"), exit(EXIT_FAILURE);
 	while (1)
 	{
-		cli_fd = accept(sock_fd, (struct sockaddr *)&s_address, &addrlen);
-		if (cli_fd < 0)
+		client_fd = accept(sock_fd, (struct sockaddr *)&s_address, &addrlen);
+		if (client_fd < 0)
 			perror("accept failed"), exit(EXIT_FAILURE);
-		printf("Client cli_fded: %s\n", inet_ntoa(s_address.sin_addr));
-		bytes = recv(cli_fd, buffer, 4096, 0);
+		printf("Client connected: %s\n", inet_ntoa(s_address.sin_addr));
+		bytes = recv(client_fd, buffer, 4096, 0);
 		if (bytes > 0)
 		{
 			printf("Raw request: \"%s\"\n", buffer), fflush(stdout);
@@ -38,8 +38,8 @@ int main(void)
 			printf("Method: %s\nPath: %s\nVersion: %s\n", meth, path, ver);
 			fflush(stdout);
 		}
-		send(cli_fd, sent, sizeof(sent), 0);
-		close(cli_fd);
+		send(client_fd, sent, sizeof(sent), 0);
+		close(client_fd);
 	}
 	return (EXIT_SUCCESS);
 }
