@@ -1,44 +1,53 @@
+/* Include necessary headers */
 #include "sockets.h"
 
 todo_t *list = NULL;
 
 /**
- * main - REST API handling POST for /todos
+ * main - REST API handling GET and POST for /todos
  * Return: 0 on success, -1 on failure
-*/
+ */
 int main(void)
 {
-	int sock_fd, client_fd;
-	size_t bytes = 0;
-	char buffer[4096];
-	struct sockaddr_in s_address;
-	socklen_t addrlen = sizeof(s_address);
+    int sock_fd, client_fd;
+    size_t bytes = 0;
+    char buffer[4096];
+    struct sockaddr_in s_address;
+    socklen_t addrlen = sizeof(s_address);
 
-	sock_fd = socket(AF_INET, SOCK_STREAM, 0);
-	if (sock_fd == -1)
-		perror("socket failed"), exit(EXIT_FAILURE);
-	s_address.sin_family = AF_INET, s_address.sin_port = htons(8080);
-	s_address.sin_addr.s_addr = INADDR_ANY;
-	if (bind(sock_fd, (struct sockaddr *)&s_address, sizeof(s_address)) < 0)
-		perror("bind failed"), exit(EXIT_FAILURE);
-	printf("Server listening on port 8080\n");
-	if (listen(sock_fd, 5) < 0)
-		perror("listen failed"), exit(EXIT_FAILURE);
-	while (1)
-	{
-		client_fd = accept(sock_fd, (struct sockaddr *)&s_address, &addrlen);
-		if (client_fd < 0)
-			perror("accept failed"), exit(EXIT_FAILURE);
-		printf("Client connected: %s\n", inet_ntoa(s_address.sin_addr));
-		bytes = recv(client_fd, buffer, 4096, 0);
-		if (bytes > 0)
-		{
-			printf("Raw request: \"%s\"\n", buffer), fflush(stdout);
-			process_req(buffer, client_fd);
-		}
-		close(client_fd);
-	}
-	return (EXIT_SUCCESS);
+    sock_fd = socket(AF_INET, SOCK_STREAM, 0);
+    if (sock_fd == -1)
+        perror("socket failed"), exit(EXIT_FAILURE);
+
+    s_address.sin_family = AF_INET;
+    s_address.sin_port = htons(8080);
+    s_address.sin_addr.s_addr = INADDR_ANY;
+
+    if (bind(sock_fd, (struct sockaddr *)&s_address, sizeof(s_address)) < 0)
+        perror("bind failed"), exit(EXIT_FAILURE);
+
+    printf("Server listening on port 8080\n");
+
+    if (listen(sock_fd, 5) < 0)
+        perror("listen failed"), exit(EXIT_FAILURE);
+
+    while (1)
+    {
+        client_fd = accept(sock_fd, (struct sockaddr *)&s_address, &addrlen);
+        if (client_fd < 0)
+            perror("accept failed"), exit(EXIT_FAILURE);
+
+        printf("Client connected: %s\n", inet_ntoa(s_address.sin_addr));
+        bytes = recv(client_fd, buffer, sizeof(buffer) - 1, 0);
+        if (bytes > 0)
+        {
+            buffer[bytes] = '\0'; /* Null-terminate the buffer */
+            printf("Raw request: \"%s\"\n", buffer), fflush(stdout);
+            process_req(buffer, client_fd);
+        }
+        close(client_fd);
+    }
+    return (EXIT_SUCCESS);
 }
 
 /**
@@ -48,21 +57,98 @@ int main(void)
  */
 void process_req(char *request, int fd)
 {
-	char meth[50], path[50];
+    char meth[50], path[50];
 
-	printf("Entering process_req\n");
-	sscanf(request, "%s %s", meth, path);
-	if (strcmp(meth, "POST") != 0 && strcmp(meth, "GET") != 0)
-	{
-		send(fd, STAT_404, sizeof(STAT_404), 0);
-		return;
-	}
-	if (strcmp(path, "/todos") != 0)
-	{
-		send(fd, STAT_404, strlen(STAT_404), 0);
-		return;
-	}
-	head_parser(request, fd);
+    printf("Entering process_req\n");
+    sscanf(request, "%s %s", meth, path);
+
+    if (strcmp(meth, "POST") != 0 && strcmp(meth, "GET") != 0)
+    {
+        send(fd, STAT_404, strlen(STAT_404), 0);
+        return;
+    }
+
+    if (strcmp(path, "/todos") != 0)
+    {
+        send(fd, STAT_404, strlen(STAT_404), 0);
+        return;
+    }
+
+    if (strcmp(meth, "POST") == 0)
+    {
+        head_parser(request, fd);
+    }
+    else if (strcmp(meth, "GET") == 0)
+    {
+        retrieve_todos(fd);
+    }
+}
+
+/**
+ * retrieve_todos - Retrieves all todos and sends them in the response
+ * @fd: file descriptor for socket connection
+ */
+void retrieve_todos(int fd)
+{
+    char buffer[4096];
+    size_t len;
+    todo_t *temp = list;
+    int offset = 0;
+    int n;
+
+    printf("Entering retrieve_todos\n");
+
+    /* Start the JSON array */
+    n = snprintf(buffer + offset, sizeof(buffer) - offset, "[");
+    if (n < 0 || n >= (int)(sizeof(buffer) - offset))
+        return; /* Error or buffer overflow */
+    offset += n;
+
+    /* Traverse the list of todos */
+    while (temp)
+    {
+        char todo_json[256];
+
+        /* Build JSON representation of the todo */
+        n = snprintf(todo_json, sizeof(todo_json),
+                     "{\"id\":%lu,\"title\":\"%s\",\"description\":\"%s\"}",
+                     temp->id, temp->title, temp->description);
+        if (n < 0 || n >= (int)sizeof(todo_json))
+            return; /* Error or buffer overflow */
+
+        /* Add comma if not the first element */
+        if (temp != list)
+        {
+            n = snprintf(buffer + offset, sizeof(buffer) - offset, ",");
+            if (n < 0 || n >= (int)(sizeof(buffer) - offset))
+                return; /* Error or buffer overflow */
+            offset += n;
+        }
+
+        /* Append the todo JSON to the buffer */
+        n = snprintf(buffer + offset, sizeof(buffer) - offset, "%s", todo_json);
+        if (n < 0 || n >= (int)(sizeof(buffer) - offset))
+            return; /* Error or buffer overflow */
+        offset += n;
+
+        temp = temp->next;
+    }
+
+    /* Close the JSON array */
+    n = snprintf(buffer + offset, sizeof(buffer) - offset, "]");
+    if (n < 0 || n >= (int)(sizeof(buffer) - offset))
+        return; /* Error or buffer overflow */
+    offset += n;
+
+    len = offset;
+
+    /* Send response headers */
+    dprintf(fd, "HTTP/1.1 200 OK\r\n");
+    dprintf(fd, "Content-Length: %zu\r\n", len);
+    dprintf(fd, "Content-Type: application/json\r\n\r\n");
+
+    /* Send the JSON list */
+    write(fd, buffer, len);
 }
 
 /**

@@ -31,5 +31,6 @@ void task_parser(char *query, int fd);
 void add_todo(char *desc, char *title, int fd);
 void query_parser(char *query);
 void body_parser(char *query);
+void retrieve_todos(int fd);
 
 #endif
