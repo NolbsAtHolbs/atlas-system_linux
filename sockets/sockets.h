@@ -29,5 +29,7 @@ void process_req(char *request, int fd);
 void head_parser(char *query, int fd);
 void task_parser(char *query, int fd);
 void add_todo(char *desc, char *title, int fd);
+void query_parser(char *query);
+void body_parser(char *query);
 
 #endif
