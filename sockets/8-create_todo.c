@@ -1,14 +1,5 @@
 #include "sockets.h"
 
-#define STAT_201 "HTTP/1.1 201 Created\r\n"
-#define STAT_404 "HTTP/1.1 404 Not Found\r\n\r\n"
-#define STAT_411 "HTTP/1.1 411 Length Required\r\n\r\n"
-#define STAT_422 "HTTP/1.1 422 Unprocessable Entity\r\n\r\n"
-
-void process_req(char *request, int fd);
-void task_parser(char *query, int fd);
-void add_todo(char *desc, char *title, int fd);
-
 todo_t *list = NULL;
 
 /**
@@ -53,15 +44,15 @@ int main(void)
 /**
  * process_req - processes a request
  * @request: request to process
- * @fd: file descriptor for socket client_fdion
+ * @fd: file descriptor for socket connection
  */
 void process_req(char *request, int fd)
 {
-	char method[50], path[50];
+	char meth[50], path[50];
 
 	printf("Entering process_req\n");
-	sscanf(request, "%s %s", method, path);
-	if (strcmp(method, "POST") != 0 && strcmp(method, "GET") != 0)
+	sscanf(request, "%s %s", meth, path);
+	if (strcmp(meth, "POST") != 0 && strcmp(meth, "GET") != 0)
 	{
 		send(fd, STAT_404, sizeof(STAT_404), 0);
 		return;
@@ -77,7 +68,7 @@ void process_req(char *request, int fd)
 /**
  * head_parser - parse an http query
  * @query: query string to parse
- * @fd: file descriptor for socket client_fdion
+ * @fd: file descriptor for socket connection
  */
 void head_parser(char *query, int fd)
 {
@@ -110,7 +101,7 @@ void head_parser(char *query, int fd)
 /**
  * task_parser - parse an http query
  * @query: query string to parse
- * @fd: file descriptor for socket client_fdion
+ * @fd: file descriptor for socket connection
 */
 void task_parser(char *query, int fd)
 {
@@ -145,14 +136,14 @@ void task_parser(char *query, int fd)
  * add_todo - Function to add to the todo list
  * @desc: description of task
  * @title: title of task
- * @fd: file descriptor for socket client_fdion
+ * @fd: file descriptor for socket connection
  */
 void add_todo(char *desc, char *title, int fd)
 {
 	static size_t id;
 	int len = 0;
 	char buffer[1024];
-	todo_t *new_todo = NULL, *temp;
+	todo_t *new_todo = NULL, *tmp;
 
 	printf("Entering add_todo\n");
 	new_todo = calloc(1, sizeof(todo_t));
@@ -167,12 +158,12 @@ void add_todo(char *desc, char *title, int fd)
 		list = new_todo;
 	else
 	{
-		temp = list;
-		for (; temp; temp = temp->next)
+		tmp = list;
+		for (; tmp; tmp = tmp->next)
 		{
-			if (temp->next == NULL)
+			if (tmp->next == NULL)
 			{
-				temp->next = new_todo;
+				tmp->next = new_todo;
 				break;
 			}
 		}
