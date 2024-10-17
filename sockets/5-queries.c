@@ -31,7 +31,7 @@ int main(void)
 		client_fd = accept(sock_fd, (struct sockaddr *)&s_address, &addrlen);
 		if (client_fd < 0)
 			perror("accept failed"), exit(EXIT_FAILURE);
-		printf("Client client_fded: %s\n", inet_ntoa(s_address.sin_addr));
+		printf("Client connected: %s\n", inet_ntoa(s_address.sin_addr));
 		bytes = recv(client_fd, buffer, 4096, 0);
 		if (bytes > 0)
 		{
