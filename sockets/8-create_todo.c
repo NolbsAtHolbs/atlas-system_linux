@@ -38,7 +38,7 @@ int main(void)
 		client_fd = accept(sock_fd, (struct sockaddr *)&s_address, &addrlen);
 		if (client_fd < 0)
 			perror("accept failed"), exit(EXIT_FAILURE);
-		printf("Client client_fded: %s\n", inet_ntoa(s_address.sin_addr));
+		printf("Client connected: %s\n", inet_ntoa(s_address.sin_addr));
 		bytes = recv(client_fd, buffer, 4096, 0);
 		if (bytes > 0)
 		{
@@ -152,7 +152,7 @@ void add_todo(char *desc, char *title, int fd)
 	static size_t id;
 	int len = 0;
 	char buffer[1024];
-	todo_t *new_todo = NULL, *tmp;
+	todo_t *new_todo = NULL, *temp;
 
 	printf("Entering add_todo\n");
 	new_todo = calloc(1, sizeof(todo_t));
@@ -167,12 +167,12 @@ void add_todo(char *desc, char *title, int fd)
 		list = new_todo;
 	else
 	{
-		tmp = list;
-		for (; tmp; tmp = tmp->next)
+		temp = list;
+		for (; temp; temp = temp->next)
 		{
-			if (tmp->next == NULL)
+			if (temp->next == NULL)
 			{
-				tmp->next = new_todo;
+				temp->next = new_todo;
 				break;
 			}
 		}
