@@ -57,12 +57,12 @@ int main(void)
  */
 void process_req(char *request, int fd)
 {
-    char meth[50], path[50];
+    char method[50], path[50];
 
     printf("Entering process_req\n");
-    sscanf(request, "%s %s", meth, path);
+    sscanf(request, "%s %s", method, path);
 
-    if (strcmp(meth, "POST") != 0 && strcmp(meth, "GET") != 0)
+    if (strcmp(method, "POST") != 0 && strcmp(method, "GET") != 0)
     {
         send(fd, STAT_404, strlen(STAT_404), 0);
         return;
@@ -74,11 +74,11 @@ void process_req(char *request, int fd)
         return;
     }
 
-    if (strcmp(meth, "POST") == 0)
+    if (strcmp(method, "POST") == 0)
     {
         head_parser(request, fd);
     }
-    else if (strcmp(meth, "GET") == 0)
+    else if (strcmp(method, "GET") == 0)
     {
         retrieve_todos(fd);
     }
