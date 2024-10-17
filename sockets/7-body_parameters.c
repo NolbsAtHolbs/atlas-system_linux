@@ -53,7 +53,7 @@ int main(void)
 		close(client_fd);
 	}
 	close(socket_fd);
-	return 0;
+	return (EXIT_SUCCESS);
 }
 
 char *make_response(char *address, char *request)

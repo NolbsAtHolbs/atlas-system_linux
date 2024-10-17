@@ -43,7 +43,7 @@ int main(void)
 		send(client_fd, sent, sizeof(sent), 0);
 		close(client_fd);
 	}
-	return (0);
+	return (EXIT_SUCCESS);
 }
 
 /**
